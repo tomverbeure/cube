@@ -9,12 +9,12 @@ submodule:
 	cd ../ && git submodule update --init
 
 syn: submodule
-	sbt "runMain led_matrix.LedMatrixTopVerilogSyn"
-	mv LedMatrixTop.v LedMatrixTop.syn.v
+	sbt "runMain cube.CubeTopVerilogSyn"
+	mv CubeTop.v CubeTop.syn.v
 
 sim: submodule
-	sbt "runMain led_matrix.LedMatrixTopVerilogSim"
-	mv LedMatrixTop.v LedMatrixTop.sim.v
+	sbt "runMain cube.CubeTopVerilogSim"
+	mv CubeTop.v CubeTop.sim.v
 
 
 waves:

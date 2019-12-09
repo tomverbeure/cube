@@ -1,5 +1,5 @@
 
-package led_matrix
+package cube
 
 import spinal.core._
 import spinal.lib._
@@ -8,7 +8,7 @@ import spinal.lib.bus.amba3.apb._
 
 import ice40._
 
-class LedMatrixTop(internalOsc : Boolean = true) extends Component {
+class CubeTop(internalOsc : Boolean = true) extends Component {
     val io = new Bundle {
         val OSC_CLK_IN  = in(Bool)
 
@@ -106,19 +106,19 @@ class LedMatrixTop(internalOsc : Boolean = true) extends Component {
 
 
 //Generate the MyTopLevel's Verilog
-object LedMatrixTopVerilogSim {
+object CubeTopVerilogSim {
     def main(args: Array[String]) {
 
         val config = SpinalConfig(anonymSignalUniqueness = true)
-        config.generateVerilog(new LedMatrixTop(internalOsc = false))
+        config.generateVerilog(new CubeTop(internalOsc = false))
     }
 }
 
-object LedMatrixTopVerilogSyn {
+object CubeTopVerilogSyn {
     def main(args: Array[String]) {
 
         val config = SpinalConfig(anonymSignalUniqueness = true)
-        config.generateVerilog(new LedMatrixTop(internalOsc = true))
+        config.generateVerilog(new CubeTop(internalOsc = true))
     }
 }
 
@@ -128,8 +128,8 @@ object MySpinalConfig extends SpinalConfig(defaultConfigForClockDomains = ClockD
 
 
 //Generate the MyTopLevel's Verilog using the above custom configuration.
-object LedMatrixTopVerilogWithCustomConfig {
+object CubeTopVerilogWithCustomConfig {
     def main(args: Array[String]) {
-        MySpinalConfig.generateVerilog(new LedMatrixTop)
+        MySpinalConfig.generateVerilog(new CubeTop)
     }
 }

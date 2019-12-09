@@ -23,7 +23,7 @@ module tb;
 
     wire led_r_, led_g_, led_b;
 
-    LedMatrixTop u_dut(
+    CubeTop u_dut(
         .OSC_CLK_IN(clk),
         .LED_R_(led_r_),
         .LED_G_(led_g_),

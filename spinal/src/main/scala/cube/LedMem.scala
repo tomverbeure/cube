@@ -1,4 +1,4 @@
-package led_matrix
+package cube
 
 import spinal.core._
 import spinal.lib._
