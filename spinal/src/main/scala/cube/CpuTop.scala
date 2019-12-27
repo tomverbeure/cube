@@ -19,11 +19,11 @@ case class CpuTop() extends Component {
         val led_green   = out(Bool)
         val led_blue    = out(Bool)
 
-        val led_mem_rd      = in(Bool)
-        val led_mem_rd_addr = in(UInt(9 bits))
-        val led_mem_rd_data = out(Bits(24 bits))
-
-        val led_streamer_apb  = master(Apb3(LedStreamer.getApb3Config()))
+//        val led_mem_rd      = in(Bool)
+//        val led_mem_rd_addr = in(UInt(9 bits))
+//        val led_mem_rd_data = out(Bits(24 bits))
+//
+//        val led_streamer_apb  = master(Apb3(LedStreamer.getApb3Config()))
     }
 
     val cpuConfig = CpuComplexConfig.default.copy(onChipRamBinFile = "../sw/progmem4k.bin")
@@ -60,6 +60,7 @@ case class CpuTop() extends Component {
 
     apbMapping += u_led_ctrl.io.apb -> (0x10000, 4 kB)
 
+/*
     //============================================================
     // LED memory
     //============================================================
@@ -79,6 +80,7 @@ case class CpuTop() extends Component {
     //============================================================
 
     apbMapping += io.led_streamer_apb       -> (0x30000, 256)
+*/
 
     //============================================================
     // Local APB decoder

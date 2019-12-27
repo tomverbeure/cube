@@ -9,8 +9,8 @@ submodule:
 	cd ../ && git submodule update --init
 
 syn: submodule
-	sbt "runMain cube.CubeTopVerilogSyn"
-	mv CubeTop.v CubeTop.syn.v
+	sbt "runMain cube.CubeShimVerilogSyn"
+	mv CubeShim.v CubeShim.syn.v
 
 sim: submodule
 	sbt "runMain cube.CubeTopVerilogSim"

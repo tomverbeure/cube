@@ -1,15 +1,15 @@
 [*]
-[*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
-[*] Mon Dec  9 05:53:33 2019
+[*] GTKWave Analyzer v3.3.90 (w)1999-2018 BSI
+[*] Fri Dec 27 06:38:37 2019
 [*]
-[dumpfile] "/home/ubuntu/projects/cube/tb/waves.vcd"
-[dumpfile_mtime] "Mon Dec  9 05:53:18 2019"
-[dumpfile_size] 86007869
-[savefile] "/home/ubuntu/projects/cube/tb/waves.gtkw"
-[timestart] 402830
-[size] 1920 1013
+[dumpfile] "/home/tom/projects/cube/tb/waves.vcd"
+[dumpfile_mtime] "Fri Dec 27 06:38:34 2019"
+[dumpfile_size] 81476648
+[savefile] "/home/tom/projects/cube/tb/waves.gtkw"
+[timestart] 0
+[size] 2519 1013
 [pos] -1 -1
-*-13.000000 436200 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.059954 2022000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.u_dut.
 [treeopen] tb.u_dut.core_u_cpu.
@@ -22,54 +22,45 @@ tb.u_dut.core_u_cpu.u_cpu.cpu_iBus_cmd_payload_pc[31:0]
 @200
 -
 @28
-tb.u_dut.OSC_CLK_IN
-tb.u_dut.LED_B_
-tb.u_dut.LED_G_
-tb.u_dut.LED_R_
-@200
--
-@28
-tb.u_dut.core_u_cpu.u_led_mem.io_led_mem_wr
-@22
-tb.u_dut.core_u_cpu.u_led_mem.io_led_mem_wr_addr[8:0]
-tb.u_dut.core_u_cpu.u_led_mem.io_led_mem_wr_data[23:0]
-@200
--
--
-@28
-tb.u_dut.core_u_led_streamer.io_start
-tb.u_dut.core_u_led_streamer.io_active
+tb.u_dut.core_u_hub75drv.clk_div_cntr_willOverflow
 @200
 -
 @24
-tb.u_dut.core_u_led_streamer.led_cntr[8:0]
-@28
-tb.u_dut.core_u_led_streamer.io_led_mem_rd
+tb.u_dut.core_u_hub75drv.bit_cntr_value[1:0]
+tb.u_dut.core_u_hub75drv.row_cntr_value[2:0]
+tb.u_dut.core_u_hub75drv.col_cntr_value[4:0]
+@23
+tb.u_dut.core_u_hub75drv.bin_dec_phase_value[3:0]
 @22
-tb.u_dut.core_u_led_streamer.io_led_mem_rd_addr[8:0]
-tb.u_dut.core_u_led_streamer.io_led_mem_rd_data[23:0]
+tb.u_dut.core_u_hub75drv.bin_dec_phase_max[3:0]
 @200
 -
-@820
-tb.u_dut.core_u_matrix_driver.cur_state_string[79:0]
-@200
--
+@800200
+-hub75
 @28
-tb.u_dut.core_u_led_streamer.io_led_stream_valid
-tb.u_dut.core_u_led_streamer.io_led_stream_ready
-@22
-tb.u_dut.core_u_led_streamer.io_led_stream_payload[23:0]
+tb.hub75_clk
 @24
-tb.u_dut.core_u_matrix_driver.t_cntr[12:0]
-@25
-tb.u_dut.core_u_matrix_driver.bit_cntr[4:0]
-@200
--
+tb.hub75_row[2:0]
+@800200
+-pix0
 @28
-tb.u_dut.core_u_matrix_driver.io_led_din
-@200
--
-@820
-tb.u_dut.core_u_led_streamer.cur_state_string[87:0]
+tb.hub75_r0
+tb.hub75_g0
+tb.hub75_b0
+@1000200
+-pix0
+@800200
+-pix1
+@28
+tb.hub75_r1
+tb.hub75_g1
+tb.hub75_b1
+@1000200
+-pix1
+@28
+tb.hub75_lat
+tb.hub75_oe_
+@1000200
+-hub75
 [pattern_trace] 1
 [pattern_trace] 0

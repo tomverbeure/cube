@@ -28,7 +28,7 @@ lazy val root = (project in file(".")).
       "org.scalatest" % "scalatest_2.11" % "2.2.1",
       "org.yaml" % "snakeyaml" % "1.8"
     ),
-    name := "led_matrix"
+    name := "cube"
 ).dependsOn(vexRiscv)
 
 lazy val vexRiscv = RootProject(file("../VexRiscv"))

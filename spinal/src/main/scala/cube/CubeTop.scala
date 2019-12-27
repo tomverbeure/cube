@@ -8,34 +8,33 @@ import spinal.lib.bus.amba3.apb._
 
 import ice40._
 
-class CubeTop(internalOsc : Boolean = true) extends Component {
+class CubeTop(isSim : Boolean = true) extends Component {
+
+    val hub75Config = Hub75Config(
+                        nr_panels     = 2, 
+                        panel_rows    = 16, 
+                        panel_cols    = 32, 
+                        row_offset    = 0, 
+                        bpc           = 4, 
+                        ram_addr_bits = 10, 
+                        ram_data_bits = 24
+                      )
+    
     val io = new Bundle {
-        val OSC_CLK_IN  = in(Bool)
+        val clk25       = in(Bool)
 
-        val MATRIX_DIN  = out(Bool)
+        val hub75       = out(Hub75Intfc(hub75Config.nr_row_bits))
 
-        val LED_R_   = out(Bool)
-        val LED_G_   = out(Bool)
-        val LED_B_   = out(Bool)
+        val leds        = out(Bits(4 bits))
     }
 
     noIoPrefix()
 
-    val osc_clk = Bool
-
-    val osc_src = if (internalOsc) new Area {
-        val u_osc = new SB_HFOSC(clkhf_div = "0b10")
-        u_osc.io.CLKHFPU    <> True
-        u_osc.io.CLKHFEN    <> True
-        u_osc.io.CLKHF      <> osc_clk
-    }
-    else new Area {
-        osc_clk := io.OSC_CLK_IN
-    }
+    val osc_clk = io.clk25
 
     val oscClkRawDomain = ClockDomain(
         clock = osc_clk,
-        frequency = FixedFrequency(12 MHz),
+        frequency = FixedFrequency(25 MHz),
         config = ClockDomainConfig(
                     resetKind = BOOT
         )
@@ -68,23 +67,24 @@ class CubeTop(internalOsc : Boolean = true) extends Component {
         )
     )
 
-    val led_red = Bool
+    //============================================================
+    // General Logic
+    //============================================================
 
-    val core = new ClockingArea(oscClkDomain) {
+    val debug_leds = new ClockingArea(oscClkDomain) {
 
         val led_counter = Reg(UInt(24 bits))
         led_counter := led_counter + 1
 
-        led_red := led_counter.msb
+        io.leds(3) := led_counter.msb
+    }
+
+    val core = new ClockingArea(oscClkDomain) {
 
         val u_cpu = new CpuTop()
 
+/*
         val led_stream = Stream(Bits(24 bits))
-
-        val u_matrix_driver = new WS2812Drv()
-        u_matrix_driver.io.led_din      <> io.MATRIX_DIN
-        u_matrix_driver.io.led_stream   <> led_stream
-
 
         val u_led_streamer = new LedStreamer()
         u_led_streamer.io.led_stream      <> led_stream
@@ -93,14 +93,20 @@ class CubeTop(internalOsc : Boolean = true) extends Component {
         u_led_streamer.io.led_mem_rd_data <> u_cpu.io.led_mem_rd_data
 
         val led_streamer_apb_regs = u_led_streamer.driveFrom(Apb3SlaveFactory(u_cpu.io.led_streamer_apb), 0x0)
+*/
+
+        val u_hub75drv = new Hub75Simple(if (isSim) 2 else 25, hub75Config)
+        io.hub75 <> u_hub75drv.io.hub75
+
     }
 
 
     val leds = new Area {
-        io.LED_R_ := ~led_red
-        io.LED_G_ := ~core.u_cpu.io.led_green
-        io.LED_B_ := ~core.u_cpu.io.led_blue
+        io.leds(2) := False
+        io.leds(1) := core.u_cpu.io.led_green
+        io.leds(0) := core.u_cpu.io.led_blue
     }
+
 
 }
 
@@ -110,7 +116,7 @@ object CubeTopVerilogSim {
     def main(args: Array[String]) {
 
         val config = SpinalConfig(anonymSignalUniqueness = true)
-        config.generateVerilog(new CubeTop(internalOsc = false))
+        config.generateVerilog(new CubeTop(isSim = true))
     }
 }
 
@@ -118,7 +124,7 @@ object CubeTopVerilogSyn {
     def main(args: Array[String]) {
 
         val config = SpinalConfig(anonymSignalUniqueness = true)
-        config.generateVerilog(new CubeTop(internalOsc = true))
+        config.generateVerilog(new CubeTop(isSim = false))
     }
 }
 

@@ -20,14 +20,22 @@ module tb;
     always
         #40 clk = !clk;
 
-
-    wire led_r_, led_g_, led_b;
+    wire [3:0] leds;
+    wire [2:0] hub75_row;
 
     CubeTop u_dut(
-        .OSC_CLK_IN(clk),
-        .LED_R_(led_r_),
-        .LED_G_(led_g_),
-        .LED_B_(led_b_)
+        .osc_clk(clk),
+        .hub75_clk(hub75_clk),
+        .hub75_lat(hub75_lat),
+        .hub75_oe_(hub75_oe_),
+        .hub75_row(hub75_row),
+        .hub75_r0(hub75_r0),
+        .hub75_g0(hub75_g0),
+        .hub75_b0(hub75_b0),
+        .hub75_r1(hub75_r1),
+        .hub75_g1(hub75_g1),
+        .hub75_b1(hub75_b1),
+        .leds(leds)
     );
 
 endmodule
