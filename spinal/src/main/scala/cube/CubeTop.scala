@@ -15,7 +15,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
                         panel_rows    = 16, 
                         panel_cols    = 32, 
                         row_offset    = 0, 
-                        bpc           = 4, 
+                        bpc           = if (isSim) 4 else 6, 
                         ram_addr_bits = 10, 
                         ram_data_bits = 24
                       )

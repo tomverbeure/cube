@@ -31,7 +31,7 @@ class Hub75Simple(oscSpeedMHz: Int, hub75Config: Hub75Config) extends Component 
     val bin_dec_phase = Counter(1 << hub75Config.bpc)
     val bin_dec_phase_max = UInt(hub75Config.bpc bits)
 
-    bin_dec_phase_max := (U(1, 1 bits) << bit_cntr)-1
+    bin_dec_phase_max := ((U(1, 1 bits) << bit_cntr)-1).resize(hub75Config.bpc)
 
     when(col_cntr.willOverflow){
         when(bin_dec_phase === bin_dec_phase_max){
@@ -51,17 +51,17 @@ class Hub75Simple(oscSpeedMHz: Int, hub75Config: Hub75Config) extends Component 
     val col_offset = Counter(hub75Config.panel_cols * 2, bit_cntr.willOverflow)
 
     val r = UInt(8 bits) 
-    r := ((col_cntr.value + (col_offset>>1)) * row_cntr.value)
+    r := ((col_offset>>1) === col_cntr.value) ? U(0, 8 bits) | (col_cntr.value * row_cntr.value)
 
 
     io.hub75.clk      := RegNext((clk_div_cntr >= clk_ratio/2) && bin_dec_phase === 0)
     io.hub75.lat      := lat
     io.hub75.oe_      := lat
-    io.hub75.row      := row_cntr
-    io.hub75.r0       := RegNext((r >> (bit_cntr.value+4))(0))
+    io.hub75.row      := RegNextWhen(row_cntr.value, col_cntr.willOverflow)
+    io.hub75.r0       := RegNext((r >> (bit_cntr.value+(8-hub75Config.bpc)))(0))
     io.hub75.g0       := False
     io.hub75.b0       := False
-    io.hub75.r1       := RegNext((r >> (bit_cntr.value+4))(0))
+    io.hub75.r1       := RegNext((r >> (bit_cntr.value+(8-hub75Config.bpc)))(0))
     io.hub75.g1       := False
     io.hub75.b1       := False
 
