@@ -13,9 +13,9 @@ class CubeTop(isSim : Boolean = true) extends Component {
     val hub75Config = Hub75Config(
                         nr_panels     = 2, 
                         panel_rows    = 16, 
-                        panel_cols    = 32, 
+                        panel_cols    = if (isSim) 32 else 64, 
                         row_offset    = 0, 
-                        bpc           = if (isSim) 4 else 6, 
+                        bpc           = if (isSim) 4 else 7, 
                         ram_addr_bits = 10, 
                         ram_data_bits = 24
                       )

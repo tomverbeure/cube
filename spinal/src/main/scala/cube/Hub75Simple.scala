@@ -49,9 +49,10 @@ class Hub75Simple(oscSpeedMHz: Int, hub75Config: Hub75Config) extends Component 
                                              lat))
 
     val col_offset = Counter(hub75Config.panel_cols * 2, bit_cntr.willOverflow)
+    val col_mul_row = col_cntr.value * row_cntr.value
 
     val r = UInt(8 bits) 
-    r := ((col_offset>>1) === col_cntr.value) ? U(0, 8 bits) | (col_cntr.value * row_cntr.value)
+    r := ((col_offset>>1) === col_cntr.value) ? U(0, 8 bits) | ((col_mul_row)(col_mul_row.getWidth-1 downto col_mul_row.getWidth-8))
 
 
     io.hub75.clk      := RegNext((clk_div_cntr >= clk_ratio/2) && bin_dec_phase === 0)
