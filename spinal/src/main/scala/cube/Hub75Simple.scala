@@ -43,29 +43,25 @@ class Hub75Simple(oscSpeedMHz: Int, hub75Config: Hub75Config) extends Component 
         }
     }
 
-    val lat = Reg(Bool)
-    lat := (clk_div_cntr.willOverflow      ? (col_cntr.willOverflowIfInc && bin_dec_phase === 0) | 
-           ((clk_div_cntr === clk_ratio/4) ? False                                               |
-                                             lat))
-
     val col_offset = Counter(hub75Config.panel_cols * 2, bit_cntr.willOverflow)
     val col_mul_row = col_cntr.value * row_cntr.value
 
     val r = UInt(8 bits) 
     r := ((col_offset>>1) === col_cntr.value) ? U(0, 8 bits) | ((col_mul_row)(col_mul_row.getWidth-1 downto col_mul_row.getWidth-8))
 
+    val col_active_phase = col_cntr.value < hub75Config.panel_cols
 
-    io.hub75.clk      := RegNext((clk_div_cntr >= clk_ratio/2) && col_cntr.value < hub75Config.panel_cols && bin_dec_phase === 0)
-    io.hub75.oe_      := RegNext(col_cntr >= hub75Config.panel_cols)
-    io.hub75.lat      := RegNext(col_cntr === hub75Config.panel_cols+1)
-    io.hub75.row      := RegNextWhen(row_cntr.value, col_cntr.willOverflow)
-    io.hub75.r0       := RegNext((r >> (bit_cntr.value+(8-hub75Config.bpc)))(0) && col_cntr.value < hub75Config.panel_cols)
+    io.hub75.clk      := RegNext(bin_dec_phase === 0 &&  col_active_phase && (clk_div_cntr >= clk_ratio/2)) init(False)
+    io.hub75.oe_      := RegNext(bin_dec_phase === 0 && !col_active_phase) init(True)
+    io.hub75.lat      := RegNext(bin_dec_phase === 0 && col_cntr === hub75Config.panel_cols+1) init(False)
+    io.hub75.r0       := RegNext(bin_dec_phase === 0 &&  col_active_phase && (r >> (bit_cntr.value+(8-hub75Config.bpc)))(0)) init(False)
     io.hub75.g0       := False
     io.hub75.b0       := False
-    io.hub75.r1       := RegNext((r >> (bit_cntr.value+(8-hub75Config.bpc)))(0))
+    io.hub75.r1       := RegNext(bin_dec_phase === 0 &&  col_active_phase && (r >> (bit_cntr.value+(8-hub75Config.bpc)))(0)) init(False)
     io.hub75.g1       := False
     io.hub75.b1       := False
 
+    io.hub75.row      := RegNextWhen(row_cntr.value, col_cntr.willOverflow)
 
     /*
     val hubClkCntr = Reg(UInt(5 bits)) init(0)
