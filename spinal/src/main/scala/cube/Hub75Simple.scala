@@ -11,7 +11,7 @@ import spinal.lib.bus.simple._
 class Hub75Simple(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
 
     def osc_clk_mhz   = oscSpeedMHz
-    def refresh_rate  = 60        // frame per second
+    def refresh_rate  = 180        // frame per second
 
     val sclk          = (conf.panel_rows * conf.panel_cols / conf.pixels_per_clk)  * (1 << conf.bpc) * refresh_rate
     val clk_ratio     = osc_clk_mhz * 1000000 / sclk
@@ -25,17 +25,17 @@ class Hub75Simple(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
 
     val clk_div_cntr  = Counter(clk_ratio, True)
     val col_cntr      = Counter(conf.panel_cols+3,   clk_div_cntr.willOverflow)
-    val row_cntr      = Counter(conf.panel_rows/2)
-    val bit_cntr      = Counter(conf.bpc,            row_cntr.willOverflow)
-
     val bin_dec_phase = Counter(1 << conf.bpc)
+    val bit_cntr      = Counter(conf.bpc)
+    val row_cntr      = Counter(conf.panel_rows/2, bit_cntr.willOverflow)
+
     val bin_dec_phase_max = UInt(conf.bpc bits)
 
     bin_dec_phase_max := ((U(1, 1 bits) << bit_cntr)-1).resize(conf.bpc)
 
     when(col_cntr.willOverflow){
         when(bin_dec_phase === bin_dec_phase_max){
-            row_cntr.increment()
+            bit_cntr.increment()
             bin_dec_phase.clear()
         }
         .otherwise{
@@ -43,8 +43,8 @@ class Hub75Simple(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
         }
     }
 
-    val col_offset = Counter(conf.panel_cols * 2, bit_cntr.willOverflow)
-    val col_mul_row = (col_cntr.value.resize(log2Up(conf.panel_cols)) + (col_offset >> 1).resize(log2Up(conf.panel_cols))) * row_cntr.value
+    val col_offset = Counter(conf.panel_cols * 2, row_cntr.willOverflow)
+    val col_mul_row = (col_cntr.value.resize(log2Up(conf.panel_cols)) + (col_offset).resize(log2Up(conf.panel_cols))) * row_cntr.value
 
     val r = UInt(8 bits) 
     //r := ((col_offset>>1) === col_cntr.value) ? U(0, 8 bits) | ((col_mul_row)(col_mul_row.getWidth-1 downto col_mul_row.getWidth-8))
@@ -62,7 +62,7 @@ class Hub75Simple(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
     io.hub75.g1       := False
     io.hub75.b1       := False
 
-    io.hub75.row      := RegNextWhen(row_cntr.value, col_cntr.willOverflow)
+    io.hub75.row      := RegNextWhen(row_cntr.value, col_cntr.willOverflow) init(0)
 
     /*
     val hubClkCntr = Reg(UInt(5 bits)) init(0)
