@@ -55,10 +55,8 @@ void wait(int cycles)
 
 #define WAIT_CYCLES 4000000
 
-int main() {
-
-    REG_WR(LED_DIR, 0xff);
-
+void matrix_fill()
+{
     for(int i=0;i<NR_LEDS;++i){
         MEM_WR(LED_MEM, i, 0);
     }
@@ -98,8 +96,15 @@ int main() {
 
         cntr += 1;
     }
+}
 
-    while(0){
+int main() {
+
+    REG_WR(LED_DIR, 0xff);
+
+    //matrix_fill();
+
+    while(1){
         REG_WR(LED_WRITE, 0x00);
         REG_WR(LED_MEM, 0x01);
         wait(WAIT_CYCLES);
