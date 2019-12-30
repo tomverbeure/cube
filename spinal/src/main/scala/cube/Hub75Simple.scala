@@ -20,7 +20,7 @@ class Hub75Simple(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
     println(s"Clock ratio:  $clk_ratio")
 
     val io = new Bundle {
-        val rgb             = slave(Stream(Bits(4 bits)))
+        val rgb             = slave(Stream(Bits(7 bits)))
         val hub75           = out(Hub75Intfc(nr_row_bits = 3))
     }
 
@@ -57,7 +57,7 @@ class Hub75Simple(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
         when(!io.rgb.valid){
             force_clear_no_data := True
         }
-        .elsewhen(io.rgb.valid && ((io.rgb.payload(3) && !need_sof) || (!io.rgb.payload(3) && need_sof) )){
+        .elsewhen(io.rgb.valid && ((io.rgb.payload(6) && !need_sof) || (!io.rgb.payload(6) && need_sof) )){
             force_clear_desync := True
         }
         .otherwise{
@@ -80,9 +80,9 @@ class Hub75Simple(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
     io.hub75.r0       := RegNextWhen(io.rgb.payload(0), io.rgb.valid && io.rgb.ready)
     io.hub75.g0       := RegNextWhen(io.rgb.payload(1), io.rgb.valid && io.rgb.ready)
     io.hub75.b0       := RegNextWhen(io.rgb.payload(2), io.rgb.valid && io.rgb.ready)
-    io.hub75.r1       := RegNextWhen(io.rgb.payload(0), io.rgb.valid && io.rgb.ready)
-    io.hub75.g1       := RegNextWhen(io.rgb.payload(1), io.rgb.valid && io.rgb.ready)
-    io.hub75.b1       := RegNextWhen(io.rgb.payload(2), io.rgb.valid && io.rgb.ready)
+    io.hub75.r1       := RegNextWhen(io.rgb.payload(3), io.rgb.valid && io.rgb.ready)
+    io.hub75.g1       := RegNextWhen(io.rgb.payload(4), io.rgb.valid && io.rgb.ready)
+    io.hub75.b1       := RegNextWhen(io.rgb.payload(5), io.rgb.valid && io.rgb.ready)
 
     io.hub75.row      := RegNextWhen(row_cntr.value, col_cntr.willOverflow) init(0)
 
