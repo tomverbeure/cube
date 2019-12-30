@@ -6,21 +6,30 @@ import spinal.lib.bus.misc._
 import spinal.lib.bus.amba3.apb._
 
 object LedMem {
-    def getApb3Config() = Apb3Config(addressWidth = 12, dataWidth = 32)
+    def getApb3Config() = Apb3Config(addressWidth = 16, dataWidth = 32)
 }
 
-class LedMem extends Component {
+case class LedMemConfig(
+      addrBits      : Int,
+      dataBits      : Int,
+      memWords      : Int
+  )
+{
+}
+
+class LedMem(conf: LedMemConfig) extends Component {
+
     val io = new Bundle {
         val led_mem_wr        = in(Bool)
-        val led_mem_wr_addr   = in(UInt(9 bits))
-        val led_mem_wr_data   = in(Bits(24 bits))
+        val led_mem_wr_addr   = in(UInt(conf.addrBits bits))
+        val led_mem_wr_data   = in(Bits(conf.dataBits bits))
 
         val led_mem_rd        = in(Bool)
-        val led_mem_rd_addr   = in(UInt(9 bits))
-        val led_mem_rd_data   = out(Bits(24 bits))
+        val led_mem_rd_addr   = in(UInt(conf.addrBits bits))
+        val led_mem_rd_data   = out(Bits(conf.dataBits bits))
     }
 
-    val u_led_mem = Mem(UInt(24 bits), 384)
+    val u_led_mem = Mem(UInt(conf.dataBits bits), conf.memWords)
 
     u_led_mem.write(
         enable    = io.led_mem_wr,
@@ -34,7 +43,7 @@ class LedMem extends Component {
         ).asBits
 
     def driveFrom(busCtrl: BusSlaveFactory, baseAddress: BigInt) = new Area {
-        val mapping = SizeMapping(0x0, 384 * 4)
+        val mapping = SizeMapping(0x0, conf.memWords * 4)
 
         val led_mem_wr_addr = busCtrl.writeAddress(mapping) >> 2
 

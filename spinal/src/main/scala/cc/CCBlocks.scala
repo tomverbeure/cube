@@ -14,45 +14,64 @@ import spinal.lib.bus.simple._
 import vexriscv.plugin.{DBusSimpleBus, IBusSimpleBus}
 
 class CCMasterArbiter(pipelinedMemoryBusConfig : PipelinedMemoryBusConfig) extends Component{
-  val io = new Bundle{
-    val iBus = slave(IBusSimpleBus(null))
-    val dBus = slave(DBusSimpleBus())
-    val masterBus = master(PipelinedMemoryBus(pipelinedMemoryBusConfig))
-  }
+    val io = new Bundle{
+        val iBus      = slave(IBusSimpleBus(null))
+        val dBus      = slave(DBusSimpleBus())
+        val dmaBus    = slave(PipelinedMemoryBus(pipelinedMemoryBusConfig))
+        val masterBus = master(PipelinedMemoryBus(pipelinedMemoryBusConfig))
+    }
 
-  io.masterBus.cmd.valid   := io.iBus.cmd.valid || io.dBus.cmd.valid
-  io.masterBus.cmd.write      := io.dBus.cmd.valid && io.dBus.cmd.wr
-  io.masterBus.cmd.address := io.dBus.cmd.valid ? io.dBus.cmd.address | io.iBus.cmd.pc
-  io.masterBus.cmd.data    := io.dBus.cmd.data
-  io.masterBus.cmd.mask    := io.dBus.cmd.size.mux(
-    0 -> B"0001",
-    1 -> B"0011",
-    default -> B"1111"
-  ) |<< io.dBus.cmd.address(1 downto 0)
-  io.iBus.cmd.ready := io.masterBus.cmd.ready && !io.dBus.cmd.valid
-  io.dBus.cmd.ready := io.masterBus.cmd.ready
+    // dmaBus has priority, then dBus, then iBus
+    val iBusActive      = !io.dmaBus.cmd.valid && !io.dBus.cmd.valid && io.iBus.cmd.valid
+    val dBusActive      = !io.dmaBus.cmd.valid &&  io.dBus.cmd.valid
+    val dmaBusActive    =  io.dmaBus.cmd.valid
 
+    val dBusMask        = io.dBus.cmd.size.mux(
+                              0       -> B"0001",
+                              1       -> B"0011",
+                              default -> B"1111"
+                          ) |<< io.dBus.cmd.address(1 downto 0)
 
-  val rspPending = RegInit(False) clearWhen(io.masterBus.rsp.valid)
-  val rspTarget = RegInit(False)
-  when(io.masterBus.cmd.fire && !io.masterBus.cmd.write){
-    rspTarget  := io.dBus.cmd.valid
-    rspPending := True
-  }
+    val curCmdAddr      =  io.dmaBus.cmd.valid ? io.dmaBus.cmd.address | 
+                          (io.dBus.cmd.valid   ? io.dBus.cmd.address   | 
+                                                 io.iBus.cmd.pc)
+  
+    io.masterBus.cmd.valid    := io.iBus.cmd.valid || io.dBus.cmd.valid || io.dmaBus.cmd.valid
+    io.masterBus.cmd.write    := (io.dmaBus.cmd.valid && io.dmaBus.cmd.write) || (io.dBus.cmd.valid && io.dBus.cmd.wr)
+    io.masterBus.cmd.address  := curCmdAddr
+    io.masterBus.cmd.data     := dBusActive ? io.dBus.cmd.data | io.dmaBus.cmd.data
+    io.masterBus.cmd.mask     := dBusActive ? dBusMask | io.dmaBus.cmd.mask
+    io.iBus.cmd.ready         := io.masterBus.cmd.ready && iBusActive
+    io.dBus.cmd.ready         := io.masterBus.cmd.ready && dBusActive
+    io.dmaBus.cmd.ready       := io.masterBus.cmd.ready && dmaBusActive
+  
+    val rspPending = RegInit(False) clearWhen(io.masterBus.rsp.valid)
+    val rspTarget  = Reg(Bits(3 bits)) init(0)
 
-  when(rspPending && !io.masterBus.rsp.valid){
-    io.iBus.cmd.ready := False
-    io.dBus.cmd.ready := False
-    io.masterBus.cmd.valid := False
-  }
+    when(io.masterBus.cmd.fire && !io.masterBus.cmd.write){
+        rspTarget(0)  := iBusActive
+        rspTarget(1)  := dBusActive
+        rspTarget(2)  := dmaBusActive
+        rspPending    := True
+    }
+  
+    when(rspPending && !io.masterBus.rsp.valid){
+        io.iBus.cmd.ready       := False
+        io.dBus.cmd.ready       := False
+        io.dmaBus.cmd.ready     := False
+        io.masterBus.cmd.valid  := False
+    }
+  
+    io.iBus.rsp.valid   := io.masterBus.rsp.valid && rspTarget(0)
+    io.iBus.rsp.inst    := io.masterBus.rsp.data
+    io.iBus.rsp.error   := False
+  
+    io.dBus.rsp.ready   := io.masterBus.rsp.valid && rspTarget(1)
+    io.dBus.rsp.data    := io.masterBus.rsp.data
+    io.dBus.rsp.error   := False
 
-  io.iBus.rsp.valid := io.masterBus.rsp.valid && !rspTarget
-  io.iBus.rsp.inst  := io.masterBus.rsp.data
-  io.iBus.rsp.error := False
-
-  io.dBus.rsp.ready := io.masterBus.rsp.valid && rspTarget
-  io.dBus.rsp.data  := io.masterBus.rsp.data
-  io.dBus.rsp.error := False
+    io.dmaBus.rsp.valid := io.masterBus.rsp.valid && rspTarget(2)
+    io.dmaBus.rsp.data  := io.masterBus.rsp.data
 }
 
 

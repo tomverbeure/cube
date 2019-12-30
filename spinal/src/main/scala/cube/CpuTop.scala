@@ -19,10 +19,10 @@ case class CpuTop() extends Component {
         val led_green   = out(Bool)
         val led_blue    = out(Bool)
 
-//        val led_mem_rd      = in(Bool)
-//        val led_mem_rd_addr = in(UInt(9 bits))
-//        val led_mem_rd_data = out(Bits(24 bits))
-//
+        val led_mem_rd      = in(Bool)
+        val led_mem_rd_addr = in(UInt(9 bits))
+        val led_mem_rd_data = out(Bits(24 bits))
+
 //        val led_streamer_apb  = master(Apb3(LedStreamer.getApb3Config()))
     }
 
@@ -60,11 +60,11 @@ case class CpuTop() extends Component {
 
     apbMapping += u_led_ctrl.io.apb -> (0x10000, 4 kB)
 
-/*
     //============================================================
     // LED memory
     //============================================================
 
+    /*
     val u_led_mem = new LedMem()
     u_led_mem.io.led_mem_rd         <> io.led_mem_rd
     u_led_mem.io.led_mem_rd_addr    <> io.led_mem_rd_addr
@@ -73,22 +73,30 @@ case class CpuTop() extends Component {
     val led_mem_apb = Apb3(LedMem.getApb3Config())
     val led_mem_apb_regs = u_led_mem.driveFrom(Apb3SlaveFactory(led_mem_apb), 0x0)
 
-    apbMapping += led_mem_apb -> (0x20000, 16 kB)
+    apbMapping += led_mem_apb -> (0x20000, 64 kB)
+    */
 
     //============================================================
     // External APBs
     //============================================================
 
-    apbMapping += io.led_streamer_apb       -> (0x30000, 256)
-*/
+//    apbMapping += io.led_streamer_apb       -> (0x30000, 256)
 
     //============================================================
     // Local APB decoder
     //============================================================
     val apbDecoder = Apb3Decoder(
-      master = u_cpu.io.apb,
+      master = u_cpu.io.periphApb,
       slaves = apbMapping
     )
+
+    val dmaApb = Apb3(cpuConfig.dmaApbConfig)
+    u_cpu.io.dmaApb       <> dmaApb
+    dmaApb.PENABLE    := False
+    dmaApb.PSEL       := (default -> False)
+    dmaApb.PADDR      := 0
+    dmaApb.PWRITE     := False
+    dmaApb.PWDATA     := 0
 
 }
 

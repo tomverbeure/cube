@@ -17,7 +17,8 @@ case class CpuComplexConfig(
                        pipelineDBus       : Boolean,
                        pipelineMainBus    : Boolean,
                        pipelineApbBridge  : Boolean,
-                       apb3Config         : Apb3Config,
+                       periphApbConfig    : Apb3Config,
+                       dmaApbConfig       : Apb3Config,
                        cpuPlugins         : ArrayBuffer[Plugin[VexRiscv]]){
 
   require(pipelineApbBridge || pipelineMainBus, "At least pipelineMainBus or pipelineApbBridge should be enable to avoid wipe transactions")
@@ -26,24 +27,24 @@ case class CpuComplexConfig(
 object CpuComplexConfig{
 
     def default =  CpuComplexConfig(
-        onChipRamSize         = 4 kB,
-        onChipRamBinFile      = null,
-        pipelineDBus          = true,
-        pipelineMainBus       = true,
-        pipelineApbBridge     = true,
+        onChipRamSize             = 4 kB,
+        onChipRamBinFile          = null,
+        pipelineDBus              = true,
+        pipelineMainBus           = true,
+        pipelineApbBridge         = true,
         cpuPlugins = ArrayBuffer(
             new IBusSimplePlugin(
-                resetVector = 0x00000000l,
-                cmdForkOnSecondStage = true,
-                cmdForkPersistence = false,
-                prediction = NONE,
-                catchAccessFault = false,
-                compressedGen = false
+                resetVector             = 0x00000000l,
+                cmdForkOnSecondStage    = true,
+                cmdForkPersistence      = false,
+                prediction              = NONE,
+                catchAccessFault        = false,
+                compressedGen           = false
             ),
             new DBusSimplePlugin(
-                catchAddressMisaligned = false,
-                catchAccessFault = false,
-                earlyInjection = false
+                catchAddressMisaligned  = false,
+                catchAccessFault        = false,
+                earlyInjection          = false
             ),
             new CsrPlugin(
                     CsrPluginConfig(
@@ -71,33 +72,37 @@ object CpuComplexConfig{
                 catchIllegalInstruction = false
             ),
             new RegFilePlugin(
-                regFileReadyKind = plugin.SYNC,
-                zeroBoot = false
+                regFileReadyKind        = plugin.SYNC,
+                zeroBoot                = false
             ),
             new IntAluPlugin,
             new SrcPlugin(
-                separatedAddSub = false,
-                executeInsertion = false
+                separatedAddSub         = false,
+                executeInsertion        = false
             ),
             new LightShifterPlugin,
             new HazardSimplePlugin(
-                bypassExecute = false,
-                bypassMemory = false,
-                bypassWriteBack = false,
-                bypassWriteBackBuffer = false,
-                pessimisticUseSrc = false,
+                bypassExecute           = false,
+                bypassMemory            = false,
+                bypassWriteBack         = false,
+                bypassWriteBackBuffer   = false,
+                pessimisticUseSrc       = false,
                 pessimisticWriteRegFile = false,
                 pessimisticAddressMatch = false
             ),
             new BranchPlugin(
-                earlyBranch = false,
-                catchAddressMisaligned = false
+                earlyBranch             = false,
+                catchAddressMisaligned  = false
             ),
             new YamlPlugin("cpu0.yaml")
         ),
-        apb3Config = Apb3Config(
-            addressWidth = 20,
-            dataWidth = 32
+        periphApbConfig = Apb3Config(
+            addressWidth  = 20,
+            dataWidth     = 32
+        ),
+        dmaApbConfig = Apb3Config(
+            addressWidth  = log2Up(4 kB) + 2,
+            dataWidth     = 32
         )
   )
 
@@ -106,10 +111,10 @@ object CpuComplexConfig{
 
     // Replace HazardSimplePlugin to get datapath bypass
     config.cpuPlugins(config.cpuPlugins.indexWhere(_.isInstanceOf[HazardSimplePlugin])) = new HazardSimplePlugin(
-      bypassExecute = true,
-      bypassMemory = true,
-      bypassWriteBack = true,
-      bypassWriteBackBuffer = true
+      bypassExecute           = true,
+      bypassMemory            = true,
+      bypassWriteBack         = true,
+      bypassWriteBackBuffer   = true
     )
 //    config.cpuPlugins(config.cpuPlugins.indexWhere(_.isInstanceOf[LightShifterPlugin])) = new FullBarrelShifterPlugin()
 
@@ -123,21 +128,20 @@ case class CpuComplex(config : CpuComplexConfig) extends Component
     import config._
 
     val io = new Bundle {
-        val apb                     = master(Apb3(config.apb3Config))
+        val periphApb               = master(Apb3(config.periphApbConfig))
         val externalInterrupt       = in(Bool)
         val timerInterrupt          = in(Bool)
+        val dmaApb                  = slave(Apb3(config.dmaApbConfig))
     }
 
     val pipelinedMemoryBusConfig = PipelinedMemoryBusConfig(
-        addressWidth = 32,
-        dataWidth = 32
+        addressWidth  = 32,
+        dataWidth     = 32
     )
 
-    // Arbiter of the cpu dBus/iBus to drive the mainBus
-    // Priority to dBus, !! cmd transactions can change on the fly !!
+    // Arbiter of the CPU dBus/iBus and DMA bus to drive the mainBus
     val mainBusArbiter = new CCMasterArbiter(pipelinedMemoryBusConfig)
 
-    //Instanciate the CPU
     val cpu = new VexRiscv(
         config = VexRiscvConfig(
             plugins = cpuPlugins
@@ -162,6 +166,11 @@ case class CpuComplex(config : CpuComplexConfig) extends Component
         case _ =>
     }
 
+    // Connect DMA APB bus to PipelinedMemoryBus arbiter
+    val dmaApb2Pipe = new ApbBus2PipelinedMemoryBus(0x0, config.dmaApbConfig, pipelinedMemoryBusConfig)
+    dmaApb2Pipe.io.src              <> io.dmaApb
+    dmaApb2Pipe.io.dest             <> mainBusArbiter.io.dmaBus
+
     //****** MainBus slaves ********
     val mainBusMapping = ArrayBuffer[(PipelinedMemoryBus,SizeMapping)]()
     val ram = new CCPipelinedMemoryBusRam(
@@ -172,17 +181,14 @@ case class CpuComplex(config : CpuComplexConfig) extends Component
 
     mainBusMapping += ram.io.bus -> (0x00000000l, onChipRamSize)
 
-    val apbBridge = new PipelinedMemoryBusToApbBridge(
-        apb3Config = Apb3Config(
-            addressWidth = 20,
-            dataWidth = 32
-        ),
-        pipelineBridge = pipelineApbBridge,
-        pipelinedMemoryBusConfig = pipelinedMemoryBusConfig
+    val periphApbBridge = new PipelinedMemoryBusToApbBridge(
+        apb3Config                = config.periphApbConfig,
+        pipelineBridge            = pipelineApbBridge,
+        pipelinedMemoryBusConfig  = pipelinedMemoryBusConfig
     )
-    mainBusMapping += apbBridge.io.pipelinedMemoryBus -> (0x80000000l, 1 MB)
+    mainBusMapping += periphApbBridge.io.pipelinedMemoryBus -> (0x80000000l, 1 MB)
 
-    io.apb <> apbBridge.io.apb
+    io.periphApb <> periphApbBridge.io.apb
 
     val mainBusDecoder = new Area {
         val logic = new CCPipelinedMemoryBusDecoder(
