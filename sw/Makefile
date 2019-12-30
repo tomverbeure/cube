@@ -1,5 +1,6 @@
 
-MEM_WORDS       = 1024
+MEM_BYTES		= 32768
+MEM_WORDS       = 8192
 
 OBJ_FILES       = start.o progmem.o
 
@@ -54,7 +55,7 @@ progmem.bin: progmem.elf
 	$(OBJCOPY) -O binary $< $@
 
 progmem4k.bin: progmem.elf
-	$(OBJCOPY) --pad-to=4096 -O binary $< $@
+	$(OBJCOPY) --pad-to=$(MEM_BYTES) -O binary $< $@
 
 progmem.elf: $(OBJ_FILES) top_defines.h sections.lds Makefile
 	$(LD) $(LDFLAGS) -s -o $@ $(OBJ_FILES) > progmem.map

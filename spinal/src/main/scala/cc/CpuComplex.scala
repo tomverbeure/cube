@@ -27,7 +27,7 @@ case class CpuComplexConfig(
 object CpuComplexConfig{
 
     def default =  CpuComplexConfig(
-        onChipRamSize             = 4 kB,
+        onChipRamSize             = 32 kB,
         onChipRamBinFile          = null,
         pipelineDBus              = true,
         pipelineMainBus           = true,
@@ -101,7 +101,7 @@ object CpuComplexConfig{
             dataWidth     = 32
         ),
         dmaApbConfig = Apb3Config(
-            addressWidth  = log2Up(4 kB) + 2,
+            addressWidth  = log2Up(32 kB),
             dataWidth     = 32
         )
   )
@@ -174,9 +174,9 @@ case class CpuComplex(config : CpuComplexConfig) extends Component
     //****** MainBus slaves ********
     val mainBusMapping = ArrayBuffer[(PipelinedMemoryBus,SizeMapping)]()
     val ram = new CCPipelinedMemoryBusRam(
-        onChipRamSize = onChipRamSize,
-        onChipRamBinFile = onChipRamBinFile,
-        pipelinedMemoryBusConfig = pipelinedMemoryBusConfig
+        onChipRamSize             = onChipRamSize,
+        onChipRamBinFile          = onChipRamBinFile,
+        pipelinedMemoryBusConfig  = pipelinedMemoryBusConfig
     )
 
     mainBusMapping += ram.io.bus -> (0x00000000l, onChipRamSize)
