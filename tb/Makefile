@@ -26,16 +26,16 @@ CubeTop.v_toplevel_core_u_cpu_u_cpu_ram_ram_symbol3.bin: CubeTop.v_toplevel_core
 	$(HEX2BIN) < $< > $@
 
 CubeTop.v_toplevel_core_u_cpu_u_cpu_ram_ram_symbol0.hex: ../sw/progmem.bin
-	$(CREATE_MIF) -f hex -d 1024 -w 8 -o 0 -i 4 $< > $@
+	$(CREATE_MIF) -f hex -d 8192 -w 8 -o 0 -i 4 $< > $@
 
 CubeTop.v_toplevel_core_u_cpu_u_cpu_ram_ram_symbol1.hex: ../sw/progmem.bin
-	$(CREATE_MIF) -f hex -d 1024 -w 8 -o 1 -i 4 $< > $@
+	$(CREATE_MIF) -f hex -d 8192 -w 8 -o 1 -i 4 $< > $@
 
 CubeTop.v_toplevel_core_u_cpu_u_cpu_ram_ram_symbol2.hex: ../sw/progmem.bin
-	$(CREATE_MIF) -f hex -d 1024 -w 8 -o 2 -i 4 $< > $@
+	$(CREATE_MIF) -f hex -d 8192 -w 8 -o 2 -i 4 $< > $@
 
 CubeTop.v_toplevel_core_u_cpu_u_cpu_ram_ram_symbol3.hex: ../sw/progmem.bin
-	$(CREATE_MIF) -f hex -d 1024 -w 8 -o 3 -i 4 $< > $@
+	$(CREATE_MIF) -f hex -d 8192 -w 8 -o 3 -i 4 $< > $@
 
 waves:
 	gtkwave waves.vcd waves.gtkw &

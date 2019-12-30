@@ -95,8 +95,11 @@ class CubeTop(isSim : Boolean = true) extends Component {
         val led_streamer_apb_regs = u_led_streamer.driveFrom(Apb3SlaveFactory(u_cpu.io.led_streamer_apb), 0x0)
 */
 
+        val u_hub75Streamer = new Hub75Streamer(hub75Config)
+
         val u_hub75drv = new Hub75Simple(if (isSim) 2 else 25, hub75Config)
-        io.hub75 <> u_hub75drv.io.hub75
+        u_hub75drv.io.rgb   <> u_hub75Streamer.io.rgb 
+        u_hub75drv.io.hub75 <> io.hub75 
 
     }
 

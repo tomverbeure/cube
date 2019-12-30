@@ -1,19 +1,19 @@
 [*]
 [*] GTKWave Analyzer v3.3.90 (w)1999-2018 BSI
-[*] Fri Dec 27 06:38:37 2019
+[*] Mon Dec 30 04:03:30 2019
 [*]
 [dumpfile] "/home/tom/projects/cube/tb/waves.vcd"
-[dumpfile_mtime] "Fri Dec 27 06:38:34 2019"
-[dumpfile_size] 81476648
+[dumpfile_mtime] "Mon Dec 30 03:58:32 2019"
+[dumpfile_size] 104113187
 [savefile] "/home/tom/projects/cube/tb/waves.gtkw"
 [timestart] 0
 [size] 2519 1013
-[pos] -1 -1
-*-19.059954 2022000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -293 -10
+*-16.558775 634760 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.u_dut.
 [treeopen] tb.u_dut.core_u_cpu.
-[sst_width] 255
+[sst_width] 470
 [signals_width] 456
 [sst_expanded] 1
 [sst_vpaned_height] 305
@@ -22,16 +22,50 @@ tb.u_dut.core_u_cpu.u_cpu.cpu_iBus_cmd_payload_pc[31:0]
 @200
 -
 @28
+tb.u_dut.core_u_hub75drv.osc_clk
+@200
+-
+@800200
+-Hub75Streamer
+@200
+-
+@24
+tb.u_dut.core_u_hub75Streamer.col_cntr_value[4:0]
+tb.u_dut.core_u_hub75Streamer.bit_cntr_value[1:0]
+tb.u_dut.core_u_hub75Streamer.row_cntr_value[2:0]
+@200
+-
+@28
+tb.u_dut.core_u_hub75Streamer.io_rgb_valid
+tb.u_dut.core_u_hub75Streamer.io_rgb_ready
+@800022
+tb.u_dut.core_u_hub75Streamer.io_rgb_payload[3:0]
+@28
+(0)tb.u_dut.core_u_hub75Streamer.io_rgb_payload[3:0]
+(1)tb.u_dut.core_u_hub75Streamer.io_rgb_payload[3:0]
+(2)tb.u_dut.core_u_hub75Streamer.io_rgb_payload[3:0]
+(3)tb.u_dut.core_u_hub75Streamer.io_rgb_payload[3:0]
+@1001200
+-group_end
+@200
+-
+@1000200
+-Hub75Streamer
+@201
+-
+@28
 tb.u_dut.core_u_hub75drv.clk_div_cntr_willOverflow
 @200
 -
 @24
-tb.u_dut.core_u_hub75drv.bit_cntr_value[1:0]
 tb.u_dut.core_u_hub75drv.row_cntr_value[2:0]
-tb.u_dut.core_u_hub75drv.col_cntr_value[4:0]
-@23
-tb.u_dut.core_u_hub75drv.bin_dec_phase_value[3:0]
+tb.u_dut.core_u_hub75drv.bit_cntr_value[1:0]
 @22
+tb.u_dut.core_u_hub75drv.col_cntr_value[5:0]
+@28
+tb.u_dut.core_u_hub75drv.col_cntr_willOverflow
+@22
+tb.u_dut.core_u_hub75drv.bin_dec_phase_value[3:0]
 tb.u_dut.core_u_hub75drv.bin_dec_phase_max[3:0]
 @200
 -
@@ -62,5 +96,36 @@ tb.hub75_lat
 tb.hub75_oe_
 @1000200
 -hub75
+@200
+-
+@c00200
+-bus
+@28
+tb.u_dut.core_u_cpu.u_cpu.cpu_iBus_cmd_valid
+tb.u_dut.core_u_cpu.u_cpu.mainBusArbiter_io_iBus_cmd_ready
+@22
+tb.u_dut.core_u_cpu.u_cpu.cpu_iBus_cmd_payload_pc[31:0]
+@28
+tb.u_dut.core_u_cpu.u_cpu.mainBusArbiter_io_iBus_rsp_valid
+@22
+tb.u_dut.core_u_cpu.u_cpu.mainBusArbiter_io_iBus_rsp_payload_inst[31:0]
+@200
+-
+@28
+tb.u_dut.core_u_cpu.u_cpu.cpu_dBus_cmd_valid
+tb.u_dut.core_u_cpu.u_cpu.mainBusArbiter_io_dBus_cmd_ready
+tb.u_dut.core_u_cpu.u_cpu.cpu_dBus_cmd_payload_wr
+tb.u_dut.core_u_cpu.u_cpu.cpu_dBus_cmd_payload_size[1:0]
+@22
+tb.u_dut.core_u_cpu.u_cpu.cpu_dBus_cmd_payload_address[31:0]
+tb.u_dut.core_u_cpu.u_cpu.cpu_dBus_cmd_payload_data[31:0]
+@200
+-
+@28
+tb.u_dut.core_u_cpu.u_cpu.mainBusArbiter_io_dBus_rsp_ready
+@22
+tb.u_dut.core_u_cpu.u_cpu.mainBusArbiter_io_dBus_rsp_data[31:0]
+@1401200
+-bus
 [pattern_trace] 1
 [pattern_trace] 0

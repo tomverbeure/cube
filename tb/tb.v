@@ -11,7 +11,7 @@ module tb;
 
         clk = 0;
 
-        repeat(40000)
+        repeat(80000)
             @(posedge clk);
 
         $finish;
