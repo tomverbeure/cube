@@ -14,23 +14,22 @@ import cc._
 
 case class CpuTop() extends Component {
 
+    val cpuConfig = CpuComplexConfig.default.copy(onChipRamBinFile = "../sw/progmem4k.bin")
+
     val io = new Bundle {
         val led_red     = out(Bool)
         val led_green   = out(Bool)
         val led_blue    = out(Bool)
 
-        val led_mem_rd      = in(Bool)
-        val led_mem_rd_addr = in(UInt(9 bits))
-        val led_mem_rd_data = out(Bits(24 bits))
+        val dmaApb      = slave(Apb3(cpuConfig.dmaApbConfig))
 
 //        val led_streamer_apb  = master(Apb3(LedStreamer.getApb3Config()))
     }
 
-    val cpuConfig = CpuComplexConfig.default.copy(onChipRamBinFile = "../sw/progmem4k.bin")
-    //val cpuConfig = CpuComplexConfig.default
 
     val u_cpu = CpuComplex(cpuConfig)
-    u_cpu.io.externalInterrupt <> False
+    u_cpu.io.externalInterrupt  <> False
+    u_cpu.io.dmaApb             <> io.dmaApb
 
     val apbMapping = ArrayBuffer[(Apb3, SizeMapping)]()
 
@@ -40,6 +39,7 @@ case class CpuTop() extends Component {
 
     val u_timer = new CCApb3Timer()
     u_timer.io.interrupt        <> u_cpu.io.timerInterrupt
+
     apbMapping += u_timer.io.apb -> (0x00000, 4 kB)
 
     //============================================================
@@ -61,22 +61,6 @@ case class CpuTop() extends Component {
     apbMapping += u_led_ctrl.io.apb -> (0x10000, 4 kB)
 
     //============================================================
-    // LED memory
-    //============================================================
-
-    /*
-    val u_led_mem = new LedMem()
-    u_led_mem.io.led_mem_rd         <> io.led_mem_rd
-    u_led_mem.io.led_mem_rd_addr    <> io.led_mem_rd_addr
-    u_led_mem.io.led_mem_rd_data    <> io.led_mem_rd_data
-
-    val led_mem_apb = Apb3(LedMem.getApb3Config())
-    val led_mem_apb_regs = u_led_mem.driveFrom(Apb3SlaveFactory(led_mem_apb), 0x0)
-
-    apbMapping += led_mem_apb -> (0x20000, 64 kB)
-    */
-
-    //============================================================
     // External APBs
     //============================================================
 
@@ -86,17 +70,9 @@ case class CpuTop() extends Component {
     // Local APB decoder
     //============================================================
     val apbDecoder = Apb3Decoder(
-      master = u_cpu.io.periphApb,
-      slaves = apbMapping
+        master = u_cpu.io.periphApb,
+        slaves = apbMapping
     )
-
-    val dmaApb = Apb3(cpuConfig.dmaApbConfig)
-    u_cpu.io.dmaApb       <> dmaApb
-    dmaApb.PENABLE    := False
-    dmaApb.PSEL       := (default -> False)
-    dmaApb.PADDR      := 0
-    dmaApb.PWRITE     := False
-    dmaApb.PWDATA     := 0
 
 }
 

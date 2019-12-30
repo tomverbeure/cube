@@ -6,21 +6,24 @@ import spinal.lib._
 import spinal.lib.bus.misc._
 import spinal.lib.bus.amba3.apb._
 
+import cc._
+
 object Hub75Streamer {
     def getApb3Config() = Apb3Config(addressWidth = 4, dataWidth = 32)
 }
 
-
-
 class Hub75Streamer(conf: Hub75Config) extends Component {
 
     val io = new Bundle {
+        val dmaApb            = master(Apb3(CpuComplexConfig.default.dmaApbConfig))
         val rgb               = master(Stream(Bits(7 bits)))
-
-//        val led_mem_rd        = out(Bool)
-//        val led_mem_rd_addr   = out(UInt(9 bits))
-//        val led_mem_rd_data   = in(Bits(24 bits))
     }
+
+    io.dmaApb.PENABLE    := False
+    io.dmaApb.PSEL       := (default -> False)
+    io.dmaApb.PADDR      := 0
+    io.dmaApb.PWRITE     := False
+    io.dmaApb.PWDATA     := 0
 
     val output_fifo_wr = Stream(Bits(7 bits))
 
