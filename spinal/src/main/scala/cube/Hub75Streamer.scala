@@ -28,7 +28,7 @@ class Hub75Streamer(conf: Hub75Config) extends Component {
     val fetch_ongoing = Reg(Bool) init(False)
     val fetch_phase   = Reg(Bool) init(False)
 
-    val PENABLE     = RegInit(False)
+    val PENABLE     = Bool
     val PADDR       = Reg(UInt(io.dmaApb.PADDR.getWidth bits)) init(0)
 
     io.dmaApb.PENABLE   := PENABLE
@@ -49,42 +49,69 @@ class Hub75Streamer(conf: Hub75Config) extends Component {
 
     val rgb_valid = RegInit(False)
 
+    object FsmState extends SpinalEnum{
+        val Idle              = newElement()
+        val RGB0ApbSetup      = newElement()
+        val RGB0ApbWaitReady  = newElement()
+        val RGB1ApbSetup      = newElement()
+        val RGB1ApbWaitReady  = newElement()
+    }
+
+    val cur_state = Reg(FsmState()) init(FsmState.Idle)
 
     rgb_valid := False
-    when(!fetch_ongoing && output_fifo_wr.ready){
-        PENABLE       := True
-        PADDR         := (U(0x4000, io.dmaApb.PADDR.getWidth bits)
-                          + (fetch_phase ? U(conf.panel_cols * conf.panel_rows/2 * bytes_per_pixel) | U(0))
-                          + row_cntr * conf.panel_cols * bytes_per_pixel
-                          + col_cntr * bytes_per_pixel)
+    PENABLE   := False
+    switch(cur_state){
+        is(FsmState.Idle){
+            when(True){
+                PENABLE     := False
 
-        fetch_ongoing := True
-    }
-    .elsewhen(io.dmaApb.PREADY){
-        when(!fetch_phase){
-            PADDR         := (U(0x4000, io.dmaApb.PADDR.getWidth bits)
-                              + (fetch_phase ? U(conf.panel_cols * conf.panel_rows/2 * bytes_per_pixel) | U(0)) 
-                              + row_cntr * conf.panel_cols * bytes_per_pixel
-                              + col_cntr * bytes_per_pixel)
+                PADDR       := (U(0x4000, io.dmaApb.PADDR.getWidth bits)
+                                + row_cntr * conf.panel_cols * bytes_per_pixel
+                                + col_cntr * bytes_per_pixel)
 
-            r0 := (io.dmaApb.PRDATA( 7 downto  0)  >> (bit_cntr.value+(8-conf.bpc)))(0)
-            g0 := (io.dmaApb.PRDATA(15 downto  8)  >> (bit_cntr.value+(8-conf.bpc)))(0)
-            b0 := (io.dmaApb.PRDATA(23 downto  16) >> (bit_cntr.value+(8-conf.bpc)))(0)
-
-            fetch_phase   := True
+                cur_state   := FsmState.RGB0ApbSetup
+            }
         }
-        .otherwise{
-            r1 := (io.dmaApb.PRDATA( 7 downto  0)  >> (bit_cntr.value+(8-conf.bpc)))(0)
-            g1 := (io.dmaApb.PRDATA(15 downto  8)  >> (bit_cntr.value+(8-conf.bpc)))(0)
-            b1 := (io.dmaApb.PRDATA(23 downto  16) >> (bit_cntr.value+(8-conf.bpc)))(0)
+        is(FsmState.RGB0ApbSetup){
+            PENABLE         := False
+            cur_state       := FsmState.RGB0ApbWaitReady
+        }
+        is(FsmState.RGB0ApbWaitReady){
+            PENABLE         := True
 
-            fetch_phase   := False
-            PENABLE       := False
-            fetch_ongoing := False
+            when(io.dmaApb.PREADY){
+                r0 := (io.dmaApb.PRDATA( 7 downto  0)  >> (bit_cntr.value+(8-conf.bpc)))(0)
+                g0 := (io.dmaApb.PRDATA(15 downto  8)  >> (bit_cntr.value+(8-conf.bpc)))(0)
+                b0 := (io.dmaApb.PRDATA(23 downto  16) >> (bit_cntr.value+(8-conf.bpc)))(0)
 
-            rgb_valid     := True
+                PADDR       := PADDR + U(conf.panel_cols * conf.panel_rows/2 * bytes_per_pixel)
+                cur_state   := FsmState.RGB1ApbSetup
+            }
+        }
+        is(FsmState.RGB1ApbSetup){
+            PENABLE         := False
+            cur_state       := FsmState.RGB1ApbWaitReady
+        }
+        is(FsmState.RGB1ApbWaitReady){
+            PENABLE         := True
 
-            col_cntr.increment()
+            when(io.dmaApb.PREADY){
+                r1 := (io.dmaApb.PRDATA( 7 downto  0)  >> (bit_cntr.value+(8-conf.bpc)))(0)
+                g1 := (io.dmaApb.PRDATA(15 downto  8)  >> (bit_cntr.value+(8-conf.bpc)))(0)
+                b1 := (io.dmaApb.PRDATA(23 downto  16) >> (bit_cntr.value+(8-conf.bpc)))(0)
+
+                rgb_valid     := True
+                col_cntr.increment()
+
+                when(col_cntr.value === conf.panel_cols-1){
+                    cur_state   := FsmState.Idle
+                }
+                .otherwise{
+                    PADDR       := PADDR - U(conf.panel_cols * conf.panel_rows/2 * bytes_per_pixel) + U(bytes_per_pixel)
+                    cur_state   := FsmState.RGB0ApbSetup
+                }
+            }
         }
     }
 
