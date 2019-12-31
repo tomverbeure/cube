@@ -21,15 +21,15 @@ case class CpuTop() extends Component {
         val led_green   = out(Bool)
         val led_blue    = out(Bool)
 
-        val dmaApb      = slave(Apb3(cpuConfig.dmaApbConfig))
+//        val dmaApb      = slave(Apb3(cpuConfig.dmaApbConfig))
 
 //        val led_streamer_apb  = master(Apb3(LedStreamer.getApb3Config()))
     }
 
 
-    val u_cpu = CpuComplex(cpuConfig)
-    u_cpu.io.externalInterrupt  <> False
-    u_cpu.io.dmaApb             <> io.dmaApb
+    val u_cpu = new CpuComplex(cpuConfig)
+//    u_cpu.io.externalInterrupt  <> False
+//    u_cpu.io.dmaApb             <> io.dmaApb
 
     val apbMapping = ArrayBuffer[(Apb3, SizeMapping)]()
 
@@ -38,7 +38,8 @@ case class CpuTop() extends Component {
     //============================================================
 
     val u_timer = new CCApb3Timer()
-    u_timer.io.interrupt        <> u_cpu.io.timerInterrupt
+    //u_timer.io.interrupt        <> u_cpu.io.timerInterrupt
+    u_timer.io.interrupt        := False
 
     apbMapping += u_timer.io.apb -> (0x00000, 4 kB)
 

@@ -81,10 +81,10 @@ class CubeTop(isSim : Boolean = true) extends Component {
 
     val core = new ClockingArea(oscClkDomain) {
 
-        val dmaApb = Apb3(CpuComplexConfig.default.dmaApbConfig)
+//        val dmaApb = Apb3(CpuComplexConfig.default.dmaApbConfig)
 
         val u_cpu = new CpuTop()
-        u_cpu.io.dmaApb     <> dmaApb
+//        u_cpu.io.dmaApb     <> dmaApb
 
 /*
         val led_stream = Stream(Bits(24 bits))
@@ -99,7 +99,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
 */
 
         val u_hub75Streamer = new Hub75Streamer(hub75Config)
-        u_hub75Streamer.io.dmaApb <> dmaApb
+//        u_hub75Streamer.io.dmaApb <> dmaApb
 
         val u_hub75drv = new Hub75Simple(if (isSim) 2 else 25, hub75Config)
         u_hub75drv.io.rgb   <> u_hub75Streamer.io.rgb 
