@@ -6,24 +6,118 @@ import spinal.lib._
 import spinal.lib.bus.misc._
 import spinal.lib.bus.amba3.apb._
 
+import spinal.lib.bus.misc.BusSlaveFactory
+import spinal.lib.graphic.{RgbConfig, Rgb}
+
 import cc._
 
-object Hub75Streamer {
-    def getApb3Config() = Apb3Config(addressWidth = 4, dataWidth = 32)
+case class Hub75DmaConfig(
+              addressWidth        : Int,
+              dataWidth           : Int,
+              beatPerAccess       : Int,
+              sizeWidth           : Int,
+              pendingRequestMax   : Int,
+              fifoSize            : Int,
+              pixelSize           : Int
+              )
+{
+    def getAxi4ReadOnlyConfig = Axi4Config(
+              addressWidth        = addressWidth + log2Up(dataWidth/8) + log2Up(beatPerAccess),
+              dataWidth           = dataWidth,
+              useId               = false,
+              useRegion           = false,
+              useBurst            = false,
+              useLock             = false,
+              useQos              = false,
+              useResp             = false
+              )
 }
 
-class Hub75Streamer(conf: Hub75Config) extends Component {
+case class Hub75DmaMem(c: Hub75DmaConfig) extends Bundle with IMasterSlave {
+
+    val cmd     = Stream(UInt(c.addressWidth bits))
+    val rsp     = Flow Fragment(Bits(c.dataWidth bits))
+
+    override def asMaster(): Unit = {
+        master(cmd)
+        slave(rsp)
+    }
+
+    def toAxi4ReadOnly : Axi4ReadOnly = {
+        val ret = Axi4ReadOnly(c.getAxi4ReadOnlyConfig)
+
+        ret.readCmd.valid     := this.cmd.valid
+        ret.readCmd.addr      := this.cmd.payload << log2Up(c.dataWidth/8) + log2Up(c.beatPerAccess)
+        ret.readCmd.prot      := "010"
+        ret.readCmd.cache     := "1111"
+        ret.readCmd.len       := c.beatPerAccess-1
+        ret.readCmd.size      := log2Up(c.dataWidth/8)
+        this.cmd.ready        := ret.readCmd.ready
+
+        this.rsp.valid        := ret.readRsp.valid
+        this.rsp.last         := ret.readRsp.last
+        this.rsp.fragment     := ret.readRsp.data
+        ret.readRsp.ready     := True
+
+        ret
+    }
+    
+}
+
+case class Hub75Dma(c: Hub75DmaConfig) extends Commponent {
+
+    import c._
+    require(dataWidth >= pixelSize)
+
+    val io = new Bundle{
+        val star
+    }
+}
+
+class Hub75Streamer(conf: Hub75Config, rgbConfig: RgbConfig) extends Component {
 
     val io = new Bundle {
-        val dmaApb            = master(Apb3(CpuComplexConfig.default.dmaApbConfig))
+        val softReset         = in(Bool()) default(False)
+        val frameStart        = out(Bool)
+
+        val pixels            = slave(Stream(Rgb(rgbConfig))
+
         val rgb               = master(Stream(Bits(7 bits)))
+
+        val error             = out(Bool)
     }
 
     val output_fifo_wr = Stream(Bits(7 bits))
 
+    //============================================================
+    // Pixel fetching counters
+    //============================================================
     val col_cntr = Counter(conf.panel_cols)
     val bit_cntr = Counter(conf.bpc, col_cntr.willOverflow)
     val row_cntr = Counter(conf.panel_rows/2, bit_cntr.willOverflow)
+
+    //============================================================
+    // Generic interface to receive pixels from DMA block
+    //============================================================
+    def feedWith(that: Stream[Fragment[Rgb]], resync : Bool = False): Unit = {
+        val error = RegInit(False)
+        val waitStartOfFrame = RegInit(False)
+
+        io.pixels << that.toStreamOfFragment.throwWhen(error).haltWhen(waitStartOfFrame)
+
+        when(io.frameStart){
+            waitStartOfFrame  := False
+        }
+        when(that.fire && that.last){
+            error := False
+            waitStartOfFrame := error
+        }
+        when(!waitStartOfFrame && !error){
+            when(io.error || resync){
+                error := True
+            }
+        }
+    }
 
     val fetch_ongoing = Reg(Bool) init(False)
     val fetch_phase   = Reg(Bool) init(False)
