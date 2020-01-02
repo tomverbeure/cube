@@ -132,7 +132,7 @@ object CubeTopVerilogSim {
     def main(args: Array[String]) {
 
         val config = SpinalConfig(anonymSignalUniqueness = true)
-        config.generateVerilog(new CubeTop(isSim = true))
+        config.generateVerilog(new CubeTop(isSim = false))
     }
 }
 
