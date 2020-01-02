@@ -12,14 +12,14 @@ object Hub75Streamer {
 
 
 
-class Hub75Streamer(conf: Hub75Config) extends Component {
+class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Component {
 
     val io = new Bundle {
         val rgb               = master(Stream(Bits(7 bits)))
 
-//        val led_mem_rd        = out(Bool)
-//        val led_mem_rd_addr   = out(UInt(9 bits))
-//        val led_mem_rd_data   = in(Bits(24 bits))
+        val led_mem_rd        = out(Bool)
+        val led_mem_rd_addr   = out(UInt(ledMemConf.addrBits bits))
+        val led_mem_rd_data   = in(Bits(ledMemConf.dataBits bits))
     }
 
     val output_fifo_wr = Stream(Bits(7 bits))

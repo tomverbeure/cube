@@ -20,9 +20,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
                         ram_data_bits = 24
                       )
 
-    val ledMemWords  = 6 * 32 * 32
-    val ledMemBpc    = 8
-    val ledMemConfig = LedMemConfig(addrBits = log2Up(ledMemWords), dataBits = 3 *ledMemBpc, memWords = ledMemWords)
+    val ledMemConfig = LedMemConfig(memWords = 6 * 32 * 32, bpc = 7)
     
     val io = new Bundle {
         val clk25       = in(Bool)
@@ -87,30 +85,13 @@ class CubeTop(isSim : Boolean = true) extends Component {
 
         val u_cpu = new CpuTop()
 
-/*
-        val led_stream = Stream(Bits(24 bits))
-
-        val u_led_streamer = new LedStreamer()
-        u_led_streamer.io.led_stream      <> led_stream
-        u_led_streamer.io.led_mem_rd      <> u_cpu.io.led_mem_rd
-        u_led_streamer.io.led_mem_rd_addr <> u_cpu.io.led_mem_rd_addr
-        u_led_streamer.io.led_mem_rd_data <> u_cpu.io.led_mem_rd_data
-
-        val led_streamer_apb_regs = u_led_streamer.driveFrom(Apb3SlaveFactory(u_cpu.io.led_streamer_apb), 0x0)
-*/
-
         //============================================================
         // LED memory
         //============================================================
     
-        val ledMemWords  = 6 * 32 * 32
-        val ledMemBpc    = 8
-        val ledMemConfig = LedMemConfig(addrBits = log2Up(ledMemWords), dataBits = 3 *ledMemBpc, memWords = ledMemWords)
+        val ledMemConfig = LedMemConfig(memWords = 6 * 32 *32, bpc = 7)
     
         val u_led_mem = new LedMem(ledMemConfig)
-        u_led_mem.io.led_mem_rd         <> False
-        u_led_mem.io.led_mem_rd_addr    <> 0
-//        u_led_mem.io.led_mem_rd_data    <> io.led_mem_rd_data
 
         val led_mem_apb_regs = u_led_mem.driveFrom(Apb3SlaveFactory(u_cpu.io.led_mem_apb), 0x0)
     
@@ -118,7 +99,10 @@ class CubeTop(isSim : Boolean = true) extends Component {
         // HUB75 Streamer
         //============================================================
 
-        val u_hub75_streamer = new Hub75Streamer(hub75Config)
+        val u_hub75_streamer = new Hub75Streamer(hub75Config, ledMemConfig)
+        u_hub75_streamer.io.led_mem_rd        <> u_led_mem.io.led_mem_rd
+        u_hub75_streamer.io.led_mem_rd_addr   <> u_led_mem.io.led_mem_rd_addr
+        u_hub75_streamer.io.led_mem_rd_data   <> u_led_mem.io.led_mem_rd_data
 
         val hub75_streamer_regs = u_hub75_streamer.driveFrom(Apb3SlaveFactory(u_cpu.io.hub75_streamer_apb), 0x0)
 

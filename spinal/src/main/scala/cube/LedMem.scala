@@ -10,14 +10,17 @@ object LedMem {
 }
 
 case class LedMemConfig(
-      addrBits      : Int,
-      dataBits      : Int,
-      memWords      : Int
+      memWords      : Int,
+      bpc           : Int
   )
 {
+    def addrBits  = log2Up(memWords)
+    def dataBits  = 3 * bpc
 }
 
 class LedMem(conf: LedMemConfig) extends Component {
+
+    import conf._
 
     val io = new Bundle {
         val led_mem_wr        = in(Bool)
@@ -47,13 +50,20 @@ class LedMem(conf: LedMemConfig) extends Component {
 
         val led_mem_wr_addr = busCtrl.writeAddress(mapping) >> 2
 
+        val bus_wr_data = Bits(24 bits)
+        busCtrl.nonStopWrite(bus_wr_data, 0)
+
+        val mem_wr_data = bus_wr_data(23 downto 24-conf.bpc) ## 
+                          bus_wr_data(15 downto 16-conf.bpc) ## 
+                          bus_wr_data( 7 downto  8-conf.bpc)
+
         io.led_mem_wr       := False
         io.led_mem_wr_addr  := led_mem_wr_addr
+        io.led_mem_wr_data  := mem_wr_data
 
         busCtrl.onWritePrimitive(mapping, true, null){
             io.led_mem_wr   := True
         }
-        busCtrl.nonStopWrite(io.led_mem_wr_data, 0)
     }
 
 }
