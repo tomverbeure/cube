@@ -18,7 +18,6 @@ case class CpuComplexConfig(
                        pipelineMainBus    : Boolean,
                        pipelineApbBridge  : Boolean,
                        periphApbConfig    : Apb3Config,
-                       dmaApbConfig       : Apb3Config,
                        cpuPlugins         : ArrayBuffer[Plugin[VexRiscv]]){
 
   require(pipelineApbBridge || pipelineMainBus, "At least pipelineMainBus or pipelineApbBridge should be enable to avoid wipe transactions")
@@ -99,10 +98,6 @@ object CpuComplexConfig{
         periphApbConfig = Apb3Config(
             addressWidth  = 20,
             dataWidth     = 32
-        ),
-        dmaApbConfig = Apb3Config(
-            addressWidth  = log2Up(32 kB),
-            dataWidth     = 32
         )
   )
 
@@ -131,7 +126,6 @@ case class CpuComplex(config : CpuComplexConfig) extends Component
         val periphApb               = master(Apb3(config.periphApbConfig))
         val externalInterrupt       = in(Bool)
         val timerInterrupt          = in(Bool)
-        val dmaApb                  = slave(Apb3(config.dmaApbConfig))
     }
 
     val pipelinedMemoryBusConfig = PipelinedMemoryBusConfig(
@@ -165,11 +159,6 @@ case class CpuComplex(config : CpuComplexConfig) extends Component
         }
         case _ =>
     }
-
-    // Connect DMA APB bus to PipelinedMemoryBus arbiter
-    val dmaApb2Pipe = new ApbBus2PipelinedMemoryBus(0x0, config.dmaApbConfig, pipelinedMemoryBusConfig)
-    dmaApb2Pipe.io.src              <> io.dmaApb
-    dmaApb2Pipe.io.dest             <> mainBusArbiter.io.dmaBus
 
     //****** MainBus slaves ********
     val mainBusMapping = ArrayBuffer[(PipelinedMemoryBus,SizeMapping)]()

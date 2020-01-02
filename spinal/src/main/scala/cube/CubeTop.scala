@@ -19,6 +19,10 @@ class CubeTop(isSim : Boolean = true) extends Component {
                         ram_addr_bits = 10, 
                         ram_data_bits = 24
                       )
+
+    val ledMemWords  = 6 * 32 * 32
+    val ledMemBpc    = 8
+    val ledMemConfig = LedMemConfig(addrBits = log2Up(ledMemWords), dataBits = 3 *ledMemBpc, memWords = ledMemWords)
     
     val io = new Bundle {
         val clk25       = in(Bool)
@@ -95,11 +99,36 @@ class CubeTop(isSim : Boolean = true) extends Component {
         val led_streamer_apb_regs = u_led_streamer.driveFrom(Apb3SlaveFactory(u_cpu.io.led_streamer_apb), 0x0)
 */
 
-        val u_hub75Streamer = new Hub75Streamer(hub75Config)
+        //============================================================
+        // LED memory
+        //============================================================
+    
+        val ledMemWords  = 6 * 32 * 32
+        val ledMemBpc    = 8
+        val ledMemConfig = LedMemConfig(addrBits = log2Up(ledMemWords), dataBits = 3 *ledMemBpc, memWords = ledMemWords)
+    
+        val u_led_mem = new LedMem(ledMemConfig)
+        u_led_mem.io.led_mem_rd         <> False
+        u_led_mem.io.led_mem_rd_addr    <> 0
+//        u_led_mem.io.led_mem_rd_data    <> io.led_mem_rd_data
 
-        val u_hub75drv = new Hub75Simple(if (isSim) 2 else 25, hub75Config)
-        u_hub75drv.io.rgb   <> u_hub75Streamer.io.rgb 
-        u_hub75drv.io.hub75 <> io.hub75 
+        val led_mem_apb_regs = u_led_mem.driveFrom(Apb3SlaveFactory(u_cpu.io.led_mem_apb), 0x0)
+    
+        //============================================================
+        // HUB75 Streamer
+        //============================================================
+
+        val u_hub75_streamer = new Hub75Streamer(hub75Config)
+
+        val hub75_streamer_regs = u_hub75_streamer.driveFrom(Apb3SlaveFactory(u_cpu.io.hub75_streamer_apb), 0x0)
+
+        //============================================================
+        // HUB75 Phy
+        //============================================================
+
+        val u_hub75phy = new Hub75Phy(if (isSim) 2 else 25, hub75Config)
+        u_hub75phy.io.rgb   <> u_hub75_streamer.io.rgb 
+        u_hub75phy.io.hub75 <> io.hub75 
 
     }
 

@@ -63,5 +63,12 @@ class Hub75Streamer(conf: Hub75Config) extends Component {
     u_output_fifo.io.push   << output_fifo_wr
     u_output_fifo.io.pop    >> io.rgb
 
+    def driveFrom(busCtrl: BusSlaveFactory, baseAddress: BigInt) = new Area {
+//        val start = busCtrl.createReadAndWrite(io.start, 0x0) init(False)
+//        val active = busCtrl.createReadOnly(io.active, 0x4)
+//
+//        io.start := start
+//        active := io.active
+    }
 
 }

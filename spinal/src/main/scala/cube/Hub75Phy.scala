@@ -8,7 +8,7 @@ import spinal.lib.bus.misc._
 import spinal.lib.bus.simple._
 
 
-class Hub75Simple(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
+class Hub75Phy(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
 
     def osc_clk_mhz   = oscSpeedMHz
     def refresh_rate  = 120        // frame per second
