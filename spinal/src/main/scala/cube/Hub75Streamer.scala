@@ -1,6 +1,8 @@
 
 package cube
 
+import scala.collection.mutable.ArrayBuffer
+
 import spinal.core._
 import spinal.lib._
 import spinal.lib.bus.misc._
@@ -9,7 +11,6 @@ import spinal.lib.bus.amba3.apb._
 object Hub75Streamer {
     def getApb3Config() = Apb3Config(addressWidth = 4, dataWidth = 32)
 }
-
 
 
 class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Component {
@@ -24,11 +25,14 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
 
     val output_fifo_wr = Stream(Bits(7 bits))
     val output_fifo_occupancy = UInt(log2Up(conf.panel_cols+1) bits)
+       
+    val col_cntr        = Counter(conf.panel_cols)
+    val panel_cntr      = Counter(conf.panels.size, col_cntr.willOverflow)
+    val bit_cntr        = Counter(conf.bpc, panel_cntr.willOverflow)
+    val row_cntr        = Counter(conf.panel_rows/2, bit_cntr.willOverflow)
 
-    val col_cntr = Counter(conf.panel_cols)
-    val bit_cntr = Counter(conf.bpc, col_cntr.willOverflow)
-    val row_cntr = Counter(conf.panel_rows/2, bit_cntr.willOverflow)
-
+    val panel_info_vec  = Vec(conf.panels.map(_.toPanelInfoHW(conf)))
+    val cur_panel       = panel_info_vec(panel_cntr.value)
 
     object FsmState extends SpinalEnum {
         val FetchPhase0        = newElement()
@@ -45,7 +49,9 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
         is(FsmState.FetchPhase0){
             when(output_fifo_occupancy < (conf.panel_cols-2)){
                 led_mem_rd        := True
-                led_mem_rd_addr   := (row_cntr * conf.panel_cols).resize(ledMemConf.addrBits) + col_cntr
+                led_mem_rd_addr   := ((cur_panel.topLeftMemAddr * conf.panel_rows * conf.panel_cols).resize(ledMemConf.addrBits)
+                                        + (row_cntr.value * conf.panel_cols)
+                                        + col_cntr)
                 led_mem_phase     := False
 
                 cur_state   := FsmState.FetchPhase1
@@ -56,7 +62,7 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
         }
         is(FsmState.FetchPhase1){
             led_mem_rd      := True
-            led_mem_rd_addr := led_mem_rd_addr + 8 * conf.panel_cols
+            led_mem_rd_addr := led_mem_rd_addr + conf.panel_rows/2
             led_mem_phase   := True
 
             col_cntr.increment()
@@ -91,28 +97,6 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
             output_fifo_wr.valid    := True
         }
     }
-
-
-    /*
-    val col_offset = Counter(conf.panel_cols * 2, row_cntr.willOverflow)
-    val col_mul_row_0 = (col_cntr.value.resize(log2Up(conf.panel_cols)) + (col_offset).resize(log2Up(conf.panel_cols))) * row_cntr.value
-    val col_mul_row_1 = (col_cntr.value.resize(log2Up(conf.panel_cols)) + (col_offset).resize(log2Up(conf.panel_cols))) * (row_cntr.value + 8)
-
-    val r0 = UInt(8 bits) 
-    val r1 = UInt(8 bits) 
-    r0 := ((col_mul_row_0)(col_mul_row_0.getWidth-1 downto col_mul_row_0.getWidth-8))
-    r1 := ((col_mul_row_1)(col_mul_row_1.getWidth-1 downto col_mul_row_1.getWidth-8))
-
-    val g0 = UInt(8 bits)
-    val g1 = UInt(8 bits)
-    g0 := U(255, 8 bits) - (row_cntr.value << 4).resize(g0.getWidth)
-    g1 := U(255, 8 bits) - ((U(8, 4 bits) + (row_cntr.value)) << 4)
-
-    val b0 = UInt(8 bits)
-    val b1 = UInt(8 bits)
-    b0 := (col_offset<<1).resize(b0.getWidth)
-    b1 := (col_offset<<1).resize(b1.getWidth)
-    */
 
     output_fifo_wr.payload(0) := r0
     output_fifo_wr.payload(1) := g0

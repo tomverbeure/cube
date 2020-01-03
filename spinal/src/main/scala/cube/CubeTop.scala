@@ -1,6 +1,8 @@
 
 package cube
 
+import scala.collection.mutable.ArrayBuffer
+
 import spinal.core._
 import spinal.lib._
 import spinal.lib.bus.misc._
@@ -10,18 +12,40 @@ import ice40._
 
 class CubeTop(isSim : Boolean = true) extends Component {
 
+    val panels = ArrayBuffer[PanelInfo]()
+
+    // 4 standing faces
+    panels += PanelInfo(-1, 1, 1,       0,       1,-1, 0)
+    panels += PanelInfo(-1, 0, 1,       1,       1,-1, 0)
+
+    panels += PanelInfo( 1, 1, 1,       2,       0,-1,-1)
+    panels += PanelInfo( 1, 0, 1,       3,       0,-1,-1)
+
+    if (!isSim){
+        panels += PanelInfo( 1, 1,-1,       4,      -1,-1, 0)
+        panels += PanelInfo( 1, 0,-1,       5,      -1,-1, 0)
+
+        panels += PanelInfo(-1, 1,-1,       6,       0,-1, 1)
+        panels += PanelInfo(-1, 0,-1,       7,       0,-1, 1)
+
+        // top face
+        panels += PanelInfo(-1, 1,-1,       8,       1, 0, 1)
+        panels += PanelInfo(-1, 1, 0,       9,       1, 0, 1)
+
+        // bottom face
+        panels += PanelInfo(-1,-1, 1,      10,       1, 0,-1)
+        panels += PanelInfo(-1,-1, 0,      11,       1, 0,-1)
+    }
+
     val hub75Config = Hub75Config(
-                        nr_panels     = 2, 
-                        panel_rows    = 16, 
-                        panel_cols    = if (isSim) 32 else 64, 
-                        row_offset    = 0, 
-                        bpc           = if (isSim) 4 else 7, 
-                        ram_addr_bits = 10, 
-                        ram_data_bits = 24
+                        panel_rows    = 16,
+                        panel_cols    = 32,
+                        bpc           = if (isSim) 4 else 6,
+                        panels        = panels.toArray
                       )
 
-    val ledMemConfig = LedMemConfig(memWords = 6 * 32 * 32, bpc = 7)
-    
+    val ledMemConfig = LedMemConfig(memWords = 6 * 32 * 32, bpc = 6)
+
     val io = new Bundle {
         val clk25       = in(Bool)
 
@@ -88,13 +112,13 @@ class CubeTop(isSim : Boolean = true) extends Component {
         //============================================================
         // LED memory
         //============================================================
-    
+
         val ledMemConfig = LedMemConfig(memWords = 6 * 32 *32, bpc = 7)
-    
+
         val u_led_mem = new LedMem(ledMemConfig)
 
         val led_mem_apb_regs = u_led_mem.driveFrom(Apb3SlaveFactory(u_cpu.io.led_mem_apb), 0x0)
-    
+
         //============================================================
         // HUB75 Streamer
         //============================================================
@@ -111,8 +135,8 @@ class CubeTop(isSim : Boolean = true) extends Component {
         //============================================================
 
         val u_hub75phy = new Hub75Phy(if (isSim) 2 else 25, hub75Config)
-        u_hub75phy.io.rgb   <> u_hub75_streamer.io.rgb 
-        u_hub75phy.io.hub75 <> io.hub75 
+        u_hub75phy.io.rgb   <> u_hub75_streamer.io.rgb
+        u_hub75phy.io.hub75 <> io.hub75
 
     }
 

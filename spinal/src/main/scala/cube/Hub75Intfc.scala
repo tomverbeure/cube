@@ -1,20 +1,60 @@
 
 package cube
 
+//import scala.collection.immutable.Array
+
 import spinal.core._
 import spinal.lib._
 import spinal.lib.io._
 import spinal.lib.bus.misc._
 import spinal.lib.bus.simple._
 
+case class PanelInfoHW(conf: Hub75Config) extends Bundle {
+    val topLeftXCoord           = SInt(2 bits)
+    val topLeftYCoord           = SInt(2 bits)
+    val topLeftZCoord           = SInt(2 bits)
+
+    val topLeftMemAddr          = UInt(log2Up(12) bits)
+
+    val xIncr                   = SInt(2 bits)
+    val yIncr                   = SInt(2 bits)
+    val zIncr                   = SInt(2 bits)
+}
+
+case class PanelInfo(
+        topLeftXCoord           : Int,
+        topLeftYCoord           : Int,
+        topLeftZCoord           : Int,
+
+        topLeftMemAddr          : Int,
+        xIncr                   : Int,
+        yIncr                   : Int,
+        zIncr                   : Int
+    )
+{
+
+    def toPanelInfoHW(conf: Hub75Config) : PanelInfoHW = {
+
+        val piHW = PanelInfoHW(conf)
+
+        piHW.topLeftXCoord     := topLeftXCoord
+        piHW.topLeftYCoord     := topLeftYCoord
+        piHW.topLeftZCoord     := topLeftZCoord
+        piHW.topLeftMemAddr    := topLeftMemAddr
+        piHW.xIncr             := xIncr
+        piHW.yIncr             := yIncr
+        piHW.zIncr             := zIncr
+
+        piHW
+    }
+}
+
+
 case class Hub75Config(
-              nr_panels       : Int, 
               panel_rows      : Int, 
               panel_cols      : Int,
-              row_offset      : Int, 
               bpc             : Int,
-              ram_addr_bits   : Int,
-              ram_data_bits   : Int
+              panels          : Array[PanelInfo]
   ) 
 {
     def pixels_per_clk    = 2
