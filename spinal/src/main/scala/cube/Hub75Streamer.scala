@@ -76,7 +76,7 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     val led_mem_rd_p1     = RegNext(led_mem_rd) init(False)
     val led_mem_phase_p1  = RegNext(led_mem_phase) init(False)
     val bit_cntr_p1       = Delay(bit_cntr.value, 2)
-    val sof_p1            = Delay((col_cntr === 0 && row_cntr === 0 && bit_cntr === 0), 2)
+    val sof_p1            = Delay((col_cntr === 0 && panel_cntr === 0 && row_cntr === 0 && bit_cntr === 0), 2)
 
     val r0  = RegInit(False)
     val g0  = RegInit(False)

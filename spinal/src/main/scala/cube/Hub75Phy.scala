@@ -25,7 +25,7 @@ class Hub75Phy(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
     }
 
     val clk_div_cntr  = Counter(clk_ratio, True)
-    val col_cntr      = Counter(conf.panel_cols+3,   clk_div_cntr.willOverflow)
+    val col_cntr      = Counter((conf.panels.size * conf.panel_cols)+3,   clk_div_cntr.willOverflow)
     val bin_dec_phase = Counter(1 << conf.bpc)
     val bit_cntr      = Counter(conf.bpc)
     val row_cntr      = Counter(conf.panel_rows/2, bit_cntr.willOverflow)
@@ -44,7 +44,7 @@ class Hub75Phy(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
         }
     }
 
-    val col_active_phase = col_cntr.value < conf.panel_cols
+    val col_active_phase = col_cntr.value < (conf.panels.size * conf.panel_cols)
 
     val need_data = bin_dec_phase === 0 && col_active_phase && clk_div_cntr === 0
     val need_sof  = (col_cntr === 0 && row_cntr === 0 && bit_cntr === 0 && bin_dec_phase === 0)
@@ -75,7 +75,7 @@ class Hub75Phy(oscSpeedMHz: Int, conf: Hub75Config) extends Component {
 
     io.hub75.clk      := RegNext(bin_dec_phase === 0 &&  col_active_phase && (clk_div_cntr >= clk_ratio/2)) init(False)
     io.hub75.oe_      := RegNext(bin_dec_phase === 0 && !col_active_phase) init(True)
-    io.hub75.lat      := RegNext(bin_dec_phase === 0 && col_cntr === conf.panel_cols+1) init(False)
+    io.hub75.lat      := RegNext(bin_dec_phase === 0 && col_cntr === (conf.panels.size * conf.panel_cols)+1) init(False)
 
     io.hub75.r0       := RegNextWhen(io.rgb.payload(0), io.rgb.valid && io.rgb.ready)
     io.hub75.g0       := RegNextWhen(io.rgb.payload(1), io.rgb.valid && io.rgb.ready)
