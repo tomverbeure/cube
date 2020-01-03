@@ -18,10 +18,10 @@ class CubeTop(isSim : Boolean = true) extends Component {
     panels += PanelInfo(-1, 1, 1,       0,       1,-1, 0)
     panels += PanelInfo(-1, 0, 1,       1,       1,-1, 0)
 
-    panels += PanelInfo( 1, 1, 1,       2,       0,-1,-1)
-    panels += PanelInfo( 1, 0, 1,       3,       0,-1,-1)
-
     if (!isSim){
+        panels += PanelInfo( 1, 1, 1,       2,       0,-1,-1)
+        panels += PanelInfo( 1, 0, 1,       3,       0,-1,-1)
+
         panels += PanelInfo( 1, 1,-1,       4,      -1,-1, 0)
         panels += PanelInfo( 1, 0,-1,       5,      -1,-1, 0)
 
@@ -156,7 +156,7 @@ object CubeTopVerilogSim {
     def main(args: Array[String]) {
 
         val config = SpinalConfig(anonymSignalUniqueness = true)
-        config.generateVerilog(new CubeTop(isSim = false))
+        config.generateVerilog(new CubeTop(isSim = true))
     }
 }
 
