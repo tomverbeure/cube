@@ -18,7 +18,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
     panels += PanelInfo(-1, 1, 1,       0,       1,-1, 0)
     panels += PanelInfo(-1, 0, 1,       1,       1,-1, 0)
 
-    if (!isSim){
+    if (!isSim && false){
         panels += PanelInfo( 1, 1, 1,       2,       0,-1,-1)
         panels += PanelInfo( 1, 0, 1,       3,       0,-1,-1)
 
@@ -40,11 +40,11 @@ class CubeTop(isSim : Boolean = true) extends Component {
     val hub75Config = Hub75Config(
                         panel_rows    = 16,
                         panel_cols    = 32,
-                        bpc           = if (isSim) 4 else 6,
+                        bpc           = if (isSim) 4 else 7,
                         panels        = panels.toArray
                       )
 
-    val ledMemConfig = LedMemConfig(memWords = 6 * 32 * 32, bpc = 6)
+    val ledMemConfig = LedMemConfig(memWords = 6 * 32 * 32, bpc = 8)
 
     val io = new Bundle {
         val clk25       = in(Bool)

@@ -62,7 +62,7 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
         }
         is(FsmState.FetchPhase1){
             led_mem_rd      := True
-            led_mem_rd_addr := led_mem_rd_addr + conf.panel_rows/2
+            led_mem_rd_addr := led_mem_rd_addr + conf.panel_rows/2 * conf.panel_cols
             led_mem_phase   := True
 
             col_cntr.increment()
