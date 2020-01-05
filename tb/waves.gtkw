@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.90 (w)1999-2018 BSI
-[*] Thu Jan  2 07:31:27 2020
+[*] Sun Jan  5 00:51:19 2020
 [*]
 [dumpfile] "/home/tom/projects/cube/tb/waves.vcd"
-[dumpfile_mtime] "Thu Jan  2 07:22:32 2020"
-[dumpfile_size] 677811932
+[dumpfile_mtime] "Sun Jan  5 00:43:28 2020"
+[dumpfile_size] 240262171
 [savefile] "/home/tom/projects/cube/tb/waves.gtkw"
-[timestart] 16332979
-[size] 3159 1013
-[pos] -31 44
-*-10.754272 16340867 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 1205299
+[size] 3159 1717
+[pos] -1 -1
+*-9.754272 1209080 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.u_dut.
 [treeopen] tb.u_dut.core_u_cpu.
@@ -17,7 +17,7 @@
 [sst_width] 470
 [signals_width] 828
 [sst_expanded] 1
-[sst_vpaned_height] 305
+[sst_vpaned_height] 554
 @22
 tb.u_dut.core_u_cpu.u_cpu.cpu_iBus_cmd_payload_pc[31:0]
 @200
@@ -39,12 +39,14 @@ tb.u_dut.core_u_hub75_streamer.osc_clk
 tb.u_dut.core_u_hub75_streamer.osc_reset_
 @200
 -
+@22
+tb.u_dut.core_u_hub75_streamer.col_cntr_value[4:0]
+@28
+tb.u_dut.core_u_hub75_streamer.panel_cntr_value
+tb.u_dut.core_u_hub75_streamer.bit_cntr_value[1:0]
 @24
 tb.u_dut.core_u_hub75_streamer.row_cntr_value[2:0]
-@22
-tb.u_dut.core_u_hub75_streamer.col_cntr_value[5:0]
 @200
--
 -
 @820
 tb.u_dut.core_u_hub75_streamer.cur_state_string[87:0]
@@ -52,9 +54,8 @@ tb.u_dut.core_u_hub75_streamer.cur_state_string[87:0]
 -
 @28
 tb.u_dut.core_u_hub75_streamer.io_led_mem_rd
-@23
-tb.u_dut.core_u_hub75_streamer.io_led_mem_rd_addr[12:0]
 @22
+tb.u_dut.core_u_hub75_streamer.io_led_mem_rd_addr[12:0]
 tb.u_dut.core_u_hub75_streamer.io_led_mem_rd_data[20:0]
 @200
 -
@@ -145,5 +146,8 @@ tb.hub75_oe_
 -
 -
 -
+@24
+tb.row_d[2:0]
+tb.bit_nr[2:0]
 [pattern_trace] 1
 [pattern_trace] 0
