@@ -18,6 +18,8 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     val io = new Bundle {
         val rgb               = master(Stream(Bits(7 bits)))
 
+        val buffer_nr         = in(UInt(1 bits))
+
         val led_mem_rd        = out(Bool)
         val led_mem_rd_addr   = out(UInt(ledMemConf.addrBits bits))
         val led_mem_rd_data   = in(Bits(ledMemConf.dataBits bits))
@@ -49,7 +51,8 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
         is(FsmState.FetchPhase0){
             when(output_fifo_occupancy < (conf.panel_cols-2)){
                 led_mem_rd        := True
-                led_mem_rd_addr   := ((cur_panel.topLeftMemAddr * conf.panel_rows * conf.panel_cols).resize(ledMemConf.addrBits)
+                led_mem_rd_addr   := ((io.buffer_nr * conf.total_nr_pixels) 
+                                        + (cur_panel.topLeftMemAddr * conf.pixels_per_panel).resize(ledMemConf.addrBits)
                                         + (row_cntr.value * conf.panel_cols)
                                         + col_cntr)
                 led_mem_phase     := False
@@ -115,6 +118,10 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     u_output_fifo.io.occupancy  <> output_fifo_occupancy
 
     def driveFrom(busCtrl: BusSlaveFactory, baseAddress: BigInt) = new Area {
+
+          val buffer_nr = busCtrl.createReadAndWrite(io.buffer_nr, 0x0) init(0)
+          io.buffer_nr := buffer_nr
+
 //        val start = busCtrl.createReadAndWrite(io.start, 0x0) init(False)
 //        val active = busCtrl.createReadOnly(io.active, 0x4)
 //

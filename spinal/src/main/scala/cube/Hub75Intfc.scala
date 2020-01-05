@@ -59,6 +59,8 @@ case class Hub75Config(
 {
     def pixels_per_clk    = 2
     def nr_row_bits       = log2Up(panel_rows / pixels_per_clk)
+    def total_nr_pixels   = panels.size * panel_rows * panel_cols
+    def pixels_per_panel  = panel_rows * panel_cols
 }
 
 case class Hub75Intfc(nr_row_bits : Int) extends Bundle {

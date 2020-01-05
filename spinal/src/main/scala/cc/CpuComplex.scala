@@ -26,7 +26,7 @@ case class CpuComplexConfig(
 object CpuComplexConfig{
 
     def default =  CpuComplexConfig(
-        onChipRamSize             = 32 kB,
+        onChipRamSize             = 24 kB,
         onChipRamBinFile          = null,
         pipelineDBus              = true,
         pipelineMainBus           = true,

@@ -44,7 +44,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
                         panels        = panels.toArray
                       )
 
-    val ledMemConfig = LedMemConfig(memWords = 6 * 32 * 32, bpc = 8)
+    val ledMemConfig = LedMemConfig(memWords = 2 * 6 * 32 * 32, bpc = 6)
 
     val io = new Bundle {
         val clk25       = in(Bool)
@@ -112,8 +112,6 @@ class CubeTop(isSim : Boolean = true) extends Component {
         //============================================================
         // LED memory
         //============================================================
-
-        val ledMemConfig = LedMemConfig(memWords = 6 * 32 *32, bpc = 7)
 
         val u_led_mem = new LedMem(ledMemConfig)
 
