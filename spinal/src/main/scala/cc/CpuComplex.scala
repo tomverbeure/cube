@@ -10,6 +10,8 @@ import spinal.lib.bus.simple._
 import scala.collection.mutable.ArrayBuffer
 import vexriscv.plugin.{NONE, _}
 import vexriscv.{VexRiscv, VexRiscvConfig, plugin}
+import vexriscv.ip.{DataCacheConfig, InstructionCacheConfig}
+
 
 case class CpuComplexConfig(
                        onChipRamSize      : BigInt,
@@ -36,7 +38,7 @@ object CpuComplexConfig{
                 resetVector             = 0x00000000l,
                 cmdForkOnSecondStage    = true,
                 cmdForkPersistence      = false,
-                prediction              = NONE,
+                prediction              = STATIC,
                 catchAccessFault        = false,
                 compressedGen           = false
             ),
@@ -79,12 +81,14 @@ object CpuComplexConfig{
                 separatedAddSub         = false,
                 executeInsertion        = false
             ),
-            new LightShifterPlugin,
+            new FullBarrelShifterPlugin(),
+            new MulSimplePlugin,
+            new DivPlugin,
             new HazardSimplePlugin(
-                bypassExecute           = false,
-                bypassMemory            = false,
-                bypassWriteBack         = false,
-                bypassWriteBackBuffer   = false,
+                bypassExecute           = true,
+                bypassMemory            = true,
+                bypassWriteBack         = true,
+                bypassWriteBackBuffer   = true,
                 pessimisticUseSrc       = false,
                 pessimisticWriteRegFile = false,
                 pessimisticAddressMatch = false
