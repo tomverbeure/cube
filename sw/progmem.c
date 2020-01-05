@@ -55,36 +55,36 @@ void wait(int cycles)
 
 #define WAIT_CYCLES 4000000
 
-void led_mem_fill(unsigned char r, unsigned char g, unsigned char b)
+void led_mem_fill(int buffer_nr, unsigned char r, unsigned char g, unsigned char b)
 {
     for(int i=0;i<32*32;++i){
-        MEM_WR(LED_MEM, i, r | (g<<8) | (b<<16));
+        MEM_WR(LED_MEM, buffer_nr * 32 * 32 +i, r | (g<<8) | (b<<16));
     }
 }
 
-void led_mem_wr(int x, int y, unsigned char r, unsigned char g, unsigned char b)
+void led_mem_wr(int buffer_nr, int x, int y, unsigned char r, unsigned char g, unsigned char b)
 {
-        MEM_WR(LED_MEM, y*32 + x, r | (g<<8) | (b<<16));
+        MEM_WR(LED_MEM, buffer_nr * 32 * 32 + y*32 + x, r | (g<<8) | (b<<16));
 }
 
-void led_mem_effect()
+void led_mem_effect(int buffer_nr)
 {
     unsigned char r,g,b;
 
     for(r=0;r<255;++r){
         for(g=0;g<255;++g){
             for(b=0;b<255;++b){
-                led_mem_fill(r,g,b);
+                led_mem_fill(buffer_nr, r,g,b);
             }
         }
     }
 }
 
-void led_mem_stripes()
+void led_mem_stripes(int buffer_nr)
 {
     for(int row=0;row<32;++row){
         for(int col=0;col<32;++col){
-            led_mem_wr(col, row, 
+            led_mem_wr(buffer_nr, col, row, 
                             (col % 3) == 0 ? 255 : 0, 
                             (col % 3) == 1 ? 255 : 0, 
                             (col % 3) == 2 ? 255 : 0);
@@ -92,6 +92,27 @@ void led_mem_stripes()
     }
 }
 
+void led_mem_rows(int buffer_nr)
+{
+    for(int row=0;row<32;++row){
+        for(int col=0;col<32;++col){
+            if (col<10){
+                led_mem_wr(buffer_nr, col, row, row*7, 0, 0);
+            } 
+            else if (col<20){
+                led_mem_wr(buffer_nr, col, row, 0, row*7, 0);
+            }
+            else if (col<30){
+                led_mem_wr(buffer_nr, col, row, 0, 0, row*7);
+            }
+            else{
+                led_mem_wr(buffer_nr, col, row, 0, row*7, row*7);
+            }
+        }
+    }
+}
+
+/*
 void matrix_fill()
 {
     for(int i=0;i<NR_LEDS;++i){
@@ -134,6 +155,15 @@ void matrix_fill()
         cntr += 1;
     }
 }
+*/
+
+void hub75_init()
+{
+    REG_WR_FIELD(HUB75_STREAMER_CONFIG, ENABLE, 1);
+    REG_WR_FIELD(HUB75_STREAMER_CONFIG, START, 1);
+    REG_WR_FIELD(HUB75_STREAMER_CONFIG, AUTO_RESTART, 1);
+    REG_WR_FIELD(HUB75_STREAMER_CONFIG, BUFFER_NR, 0);
+}
 
 int main() {
 
@@ -147,7 +177,8 @@ int main() {
 //        led_mem_effect();
 //   }
 
-    led_mem_stripes();
+    led_mem_rows(0);
+    hub75_init();
 
     while(1){
         REG_WR(LED_WRITE, 0x00);

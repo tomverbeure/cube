@@ -1,6 +1,6 @@
 
-MEM_BYTES		= 32768
-MEM_WORDS       = 8192
+MEM_BYTES		= 24576
+MEM_WORDS       = 6144
 
 OBJ_FILES       = start.o progmem.o
 
