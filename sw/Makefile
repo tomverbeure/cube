@@ -57,7 +57,7 @@ progmem.bin: progmem.elf
 progmem4k.bin: progmem.elf
 	$(OBJCOPY) --pad-to=$(MEM_BYTES) -O binary $< $@
 
-progmem.elf: $(OBJ_FILES) top_defines.h sections.lds Makefile ../movie/ricks.h
+progmem.elf: $(OBJ_FILES) top_defines.h sections.lds Makefile ../movie/ricks.h ../movie/palette.h
 	$(LD) $(LDFLAGS) -s -o $@ $(OBJ_FILES) > progmem.map
 
 progmem_dis.elf: $(OBJ_FILES) top_defines.h sections.lds Makefile

@@ -3,11 +3,12 @@
 
 #include "reg.h"
 #include "top_defines.h"
+
+#include "../movie/palette.h"
 #include "../movie/ricks.h"
 
 #define NR_LEDS     384
 
-#if 0
 const uint8_t gamma8[] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
@@ -25,7 +26,6 @@ const uint8_t gamma8[] = {
     144,146,148,150,152,154,156,158,160,162,164,167,169,171,173,175,
     177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213,
     215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255 };
-#endif
 
 
 static inline uint32_t rdcycle(void) {
@@ -127,9 +127,9 @@ void led_mem_rick(int buffer_nr, int frame_nr)
             else{
                 unsigned char val = *ptr;
                 led_mem_wr(buffer_nr, col, row, 
-                                ((val   ) & 3)<<6,
-                                ((val>>2) & 3)<<6,
-                                ((val>>4) & 3)<<6);
+                                gamma8[palette_bin[val * 3]],
+                                gamma8[palette_bin[val * 3 + 1]],
+                                gamma8[palette_bin[val * 3 + 2]]);
                 ++ptr;
             }
 

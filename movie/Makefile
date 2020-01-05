@@ -1,5 +1,5 @@
 
-#RICKS = rick_32x23-0.8bpp.rgb \
+#RICKS_ORIG = rick_32x23-0.8bpp.rgb \
 #		rick_32x23-1.8bpp.rgb \
 #		rick_32x23-2.8bpp.rgb \
 #		rick_32x23-3.8bpp.rgb \
@@ -32,49 +32,81 @@
 #		rick_32x23-30.8bpp.rgb \
 #		rick_32x23-31.8bpp.rgb
 
-RICKS = rick_32x23-0.8bpp.rgb \
-		rick_32x23-2.8bpp.rgb \
-		rick_32x23-4.8bpp.rgb \
-		rick_32x23-6.8bpp.rgb \
-		rick_32x23-8.8bpp.rgb \
-		rick_32x23-10.8bpp.rgb \
-		rick_32x23-12.8bpp.rgb \
-		rick_32x23-14.8bpp.rgb \
-		rick_32x23-16.8bpp.rgb \
-		rick_32x23-18.8bpp.rgb \
-		rick_32x23-20.8bpp.rgb \
-		rick_32x23-22.8bpp.rgb \
-		rick_32x23-24.8bpp.rgb \
-		rick_32x23-26.8bpp.rgb \
-		rick_32x23-28.8bpp.rgb \
-		rick_32x23-30.8bpp.rgb
+RICKS_ORIG = rick_32x23-00 \
+		rick_32x23-02 \
+		rick_32x23-04 \
+		rick_32x23-06 \
+		rick_32x23-08 \
+		rick_32x23-10 \
+		rick_32x23-12 \
+		rick_32x23-14 \
+		rick_32x23-16 \
+		rick_32x23-18 \
+		rick_32x23-20 \
+		rick_32x23-22 \
+		rick_32x23-24 \
+		rick_32x23-26 \
+		rick_32x23-28 \
+		rick_32x23-30
 
-all: 24bpp_to_8bpp ricks.h
+RICKS_ORIG_PNG  = $(RICKS_ORIG:=.png)
+RICKS_ORIG_RGB  = $(RICKS_ORIG:=.rgb)
+
+RICKS_FINAL = rick_32x23-00 \
+			  rick_32x23-01 \
+			  rick_32x23-02 \
+			  rick_32x23-03 \
+			  rick_32x23-04 \
+			  rick_32x23-05 \
+			  rick_32x23-06 \
+			  rick_32x23-07 \
+			  rick_32x23-08 \
+			  rick_32x23-09 \
+			  rick_32x23-10 \
+			  rick_32x23-11 \
+			  rick_32x23-12 \
+			  rick_32x23-13 \
+			  rick_32x23-14 \
+			  rick_32x23-15
+
+RICKS_FINAL_IDX  = $(RICKS_FINAL:=.idx)
+
+all: ricks.h palette.h
+
+# Convert into 1 file to force unique palette
+ricks_joined.gif: $(RICKS_ORIG_PNG)
+	convert $(RICKS_ORIG_PNG) -append -colors 64 $@
+
+.PRECIOUS: %.rgb
+%.rgb: ricks_joined.gif
+	convert $< -crop 32x23 rick_32x23-%02d.rgb
+
+%.idx: %.rgb palette.info
+	./palette_to_c.py palette.info $< $@
 
 ricks.h: ricks.bin
 	xxd --include $< > $@
 
-ricks.bin: $(RICKS)
-	cat $(RICKS) > $@
+ricks.bin: $(RICKS_FINAL_IDX)
+	cat $^ > $@
 
-%.8bpp.rgb: %.rgb
-	./24bpp_to_8bpp $< $@
-
-#rick_32x23-0.8bpp.rgb: rick_32x23-0.rgb 24bpp_to_8bpp
-#	./24bpp_to_8bpp $< $@
-
-#rick_32x23-0.rgb: rick_orig.gif
 %.rgb: %.png
 	convert $< $@
 
 %.png: rick_32x23.gif
-	convert -coalesce rick_32x23.gif rick_32x23.png
+	convert -coalesce rick_32x23.gif rick_32x23-%02d.png
 
 rick_32x23.gif: rick_orig.gif
 	convert -resize 32x23 rick_orig.gif rick_32x23.gif
 
-24bpp_to_8bpp: 24bpp_to_8bpp.c
-	gcc -g -O0 $< -o $@
+palette.info: ricks_joined.gif
+	convert ricks_joined.gif -format %c -depth 8 histogram:info:- > $@
+
+palette.bin: palette.info
+	./palette_to_c.py $< dummy dummy $@
+
+palette.h: palette.bin
+	xxd --include $< > $@
 
 clean: 
-	rm -f rick_32x23.gif *.png *.rgb 24bpp_to_8bpp ricks.bin ricks.h
+	rm -f rick_32x23.gif *.png *.rgb ricks.* *.idx ricks_joined.gif palette.*
