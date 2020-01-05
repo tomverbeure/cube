@@ -11,7 +11,7 @@
                                                                 & ~FIELD_MASK(reg_name, field_name)) \
                                                                 | (((wr_data)<<(reg_name##_##field_name##_FIELD_START)) & FIELD_MASK(reg_name, field_name))))
 
-#define REG_RD_FIELD(reg_name, field_name)          ((REG_RD(reg_name) & FIELD_NAME(reg_name, field_name)) >> (reg_name##_##field_name##_FIELD_START))
+#define REG_RD_FIELD(reg_name, field_name)          ((REG_RD(reg_name) & FIELD_MASK(reg_name, field_name)) >> (reg_name##_##field_name##_FIELD_START))
 
 #define MEM_WR(mem_name, wr_addr, wr_data)          (*( (volatile uint32_t *)(0x80000000 | mem_name##_ADDR) + (wr_addr)) = (wr_data))
 

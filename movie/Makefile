@@ -49,7 +49,10 @@ RICKS = rick_32x23-0.8bpp.rgb \
 		rick_32x23-28.8bpp.rgb \
 		rick_32x23-30.8bpp.rgb
 
-all: 24bpp_to_8bpp ricks.bin
+all: 24bpp_to_8bpp ricks.h
+
+ricks.h: ricks.bin
+	xxd --include $< > $@
 
 ricks.bin: $(RICKS)
 	cat $(RICKS) > $@
@@ -74,4 +77,4 @@ rick_32x23.gif: rick_orig.gif
 	gcc -g -O0 $< -o $@
 
 clean: 
-	rm -f rick_32x23.gif *.png *.rgb 24bpp_to_8bpp ricks.bin
+	rm -f rick_32x23.gif *.png *.rgb 24bpp_to_8bpp ricks.bin ricks.h

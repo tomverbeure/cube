@@ -7,11 +7,11 @@ OBJ_FILES       = start.o progmem.o
 TOOLS_PREFIX    = /opt/riscv32i/bin
 TARGET          = $(TOOLS_PREFIX)/riscv32-unknown-elf
 AS              = $(TARGET)-as
-ASFLAGS         = -march=rv32i -mabi=ilp32
+ASFLAGS         = -march=rv32im -mabi=ilp32
 LD              = $(TARGET)-gcc
-LDFLAGS         = -march=rv32i -mabi=ilp32 -Wl,-Tsections.lds,-Map,progmem.map -ffreestanding -nostartfiles
+LDFLAGS         = -march=rv32im -mabi=ilp32 -Wl,-Tsections.lds,-Map,progmem.map -ffreestanding -nostartfiles
 CC              = $(TARGET)-gcc
-CFLAGS          = -march=rv32i -mabi=ilp32 -Wall -Wextra -pedantic -DFREQ=$(FREQ_PLL)000000 -O2
+CFLAGS          = -march=rv32im -mabi=ilp32 -Wall -Wextra -pedantic -DFREQ=$(FREQ_PLL)000000 -O2
 #CFLAGS          = -march=rv32i -mabi=ilp32 -Wall -Wextra -pedantic -DFREQ=$(FREQ_PLL)000000 -Os -lto -msave-restore
 OBJCOPY         = $(TARGET)-objcopy
 OBJDUMP         = $(TARGET)-objdump

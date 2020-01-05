@@ -3,9 +3,11 @@
 
 #include "reg.h"
 #include "top_defines.h"
+#include "../movie/ricks.h"
 
 #define NR_LEDS     384
 
+#if 0
 const uint8_t gamma8[] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
@@ -23,6 +25,7 @@ const uint8_t gamma8[] = {
     144,146,148,150,152,154,156,158,160,162,164,167,169,171,173,175,
     177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213,
     215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255 };
+#endif
 
 
 static inline uint32_t rdcycle(void) {
@@ -112,6 +115,29 @@ void led_mem_rows(int buffer_nr)
     }
 }
 
+void led_mem_rick(int buffer_nr, int frame_nr)
+{
+    unsigned char *ptr = ricks_bin + frame_nr * 32 * 23;
+
+    for(int row=0; row<32; ++row){
+        for(int col=0;col<32;++col){
+            if (row < 4 || row >= 27){
+                led_mem_wr(buffer_nr, col, row, 0, 0, 0);
+            }
+            else{
+                unsigned char val = *ptr;
+                led_mem_wr(buffer_nr, col, row, 
+                                ((val   ) & 3)<<6,
+                                ((val>>2) & 3)<<6,
+                                ((val>>4) & 3)<<6);
+                ++ptr;
+            }
+
+        }
+    }
+}
+
+
 /*
 void matrix_fill()
 {
@@ -165,6 +191,17 @@ void hub75_init()
     REG_WR_FIELD(HUB75_STREAMER_CONFIG, BUFFER_NR, 0);
 }
 
+int hub75_get_scratch_buffer()
+{
+    int row;
+    do{
+        row = REG_RD_FIELD(HUB75_STREAMER_STATUS, CUR_ROW_NR);
+    }
+    while(row != 1);
+
+    return !REG_RD_FIELD(HUB75_STREAMER_STATUS, CUR_BUFFER_NR);
+}
+
 int main() {
 
 //    led_mem_fill(128, 64, 32);
@@ -177,8 +214,17 @@ int main() {
 //        led_mem_effect();
 //   }
 
-    led_mem_rows(0);
+//    led_mem_rows(0);
+    led_mem_rick(0,0);
     hub75_init();
+
+    int frame_cntr = 0;
+    while(1){
+        int scratch_buf = hub75_get_scratch_buffer();
+        led_mem_rick(scratch_buf, frame_cntr / 16);
+        REG_WR_FIELD(HUB75_STREAMER_CONFIG, BUFFER_NR, scratch_buf);
+        frame_cntr = (frame_cntr + 1) % 256;
+    }
 
     while(1){
         REG_WR(LED_WRITE, 0x00);
