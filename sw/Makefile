@@ -19,7 +19,7 @@ OBJDUMP         = $(TARGET)-objdump
 .PHONY: all clean syntax time stat flash
 
 #all: progmem.dis progmem.bin progmem0.coe progmem0.mif progmem0.hex progmem.mem
-all: progmem.dis progmem.bin progmem4k.bin progmem.mem progmem.hex
+all: progmem.dis progmem.bin progmem4k.bin progmem.mem progmem.hex progmem0.mif
 
 progmem.dis: progmem_dis.elf
 	$(OBJDUMP) -s -D $< > $@

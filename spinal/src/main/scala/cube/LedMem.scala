@@ -32,7 +32,7 @@ class LedMem(conf: LedMemConfig) extends Component {
         val led_mem_rd_data   = out(Bits(conf.dataBits bits))
     }
 
-    println("LedMem: memWords: %d", conf.memWords)
+    println(s"LedMem: memWords: ${conf.memWords}")
 
     val u_led_mem = Mem(UInt(conf.dataBits bits), conf.memWords)
 

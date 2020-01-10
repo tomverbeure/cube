@@ -8,7 +8,7 @@ import spinal.lib._
 import spinal.lib.bus.misc._
 import spinal.lib.bus.amba3.apb._
 
-import ice40._
+import cyclone2._
 
 class CubeTop(isSim : Boolean = true) extends Component {
 
@@ -56,22 +56,32 @@ class CubeTop(isSim : Boolean = true) extends Component {
 
     noIoPrefix()
 
-    val osc_clk = io.clk25
+    val main_clk = Bool
+    val main_clk_speed = if (isSim) 7 MHz else 50 MHz
 
-    val oscClkRawDomain = ClockDomain(
-        clock = osc_clk,
-        frequency = FixedFrequency(25 MHz),
+    val osc_src = if (isSim) new Area {
+        main_clk    := io.clk25
+    }
+    else new Area {
+        val u_main_clk = new main_pll()
+        u_main_clk.io.inclk0  <> io.clk25
+        u_main_clk.io.c0      <> main_clk
+    }
+
+    val mainClkRawDomain = ClockDomain(
+        clock = main_clk,
+        frequency = FixedFrequency(main_clk_speed),
         config = ClockDomainConfig(
                     resetKind = BOOT
         )
     )
 
     //============================================================
-    // Create osc clock reset
+    // Create main clock reset
     //============================================================
-    val osc_reset_ = Bool
+    val main_reset_ = Bool
 
-    val osc_reset_gen = new ClockingArea(oscClkRawDomain) {
+    val main_reset_gen = new ClockingArea(mainClkRawDomain) {
         val reset_unbuffered_ = True
 
         val reset_cntr = Reg(UInt(5 bits)) init(0)
@@ -80,13 +90,13 @@ class CubeTop(isSim : Boolean = true) extends Component {
             reset_unbuffered_ := False
         }
 
-        osc_reset_ := RegNext(reset_unbuffered_)
+        main_reset_ := RegNext(reset_unbuffered_)
     }
 
 
-    val oscClkDomain = ClockDomain(
-        clock = osc_clk,
-        reset = osc_reset_,
+    val mainClkDomain = ClockDomain(
+        clock = main_clk,
+        reset = main_reset_,
         config = ClockDomainConfig(
             resetKind = SYNC,
             resetActiveLevel = LOW
@@ -97,7 +107,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
     // General Logic
     //============================================================
 
-    val debug_leds = new ClockingArea(oscClkDomain) {
+    val debug_leds = new ClockingArea(mainClkDomain) {
 
         val led_counter = Reg(UInt(24 bits))
         led_counter := led_counter + 1
@@ -105,7 +115,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
         io.leds(3) := led_counter.msb
     }
 
-    val core = new ClockingArea(oscClkDomain) {
+    val core = new ClockingArea(mainClkDomain) {
 
         val u_cpu = new CpuTop()
 
@@ -132,7 +142,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
         // HUB75 Phy
         //============================================================
 
-        val u_hub75phy = new Hub75Phy(if (isSim) 2 else 25, hub75Config)
+        val u_hub75phy = new Hub75Phy(main_clk_speed, hub75Config)
         u_hub75phy.io.rgb   <> u_hub75_streamer.io.rgb
         u_hub75phy.io.hub75 <> io.hub75
 
