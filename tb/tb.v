@@ -24,7 +24,7 @@ module tb;
     wire [2:0] hub75_row;
 
     CubeTop u_dut(
-        .osc_clk(clk),
+        .clk25(clk),
         .hub75_clk(hub75_clk),
         .hub75_lat(hub75_lat),
         .hub75_oe_(hub75_oe_),

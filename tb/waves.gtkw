@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.90 (w)1999-2018 BSI
-[*] Sun Jan  5 00:51:19 2020
+[*] Sat Jan 11 20:35:57 2020
 [*]
 [dumpfile] "/home/tom/projects/cube/tb/waves.vcd"
-[dumpfile_mtime] "Sun Jan  5 00:43:28 2020"
-[dumpfile_size] 240262171
+[dumpfile_mtime] "Wed Jan  8 08:02:01 2020"
+[dumpfile_size] 318890356
 [savefile] "/home/tom/projects/cube/tb/waves.gtkw"
-[timestart] 1205299
+[timestart] 4096000
 [size] 3159 1717
 [pos] -1 -1
-*-9.754272 1209080 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-15.461666 4282440 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.u_dut.
 [treeopen] tb.u_dut.core_u_cpu.
@@ -24,9 +24,6 @@ tb.u_dut.core_u_cpu.u_cpu.cpu_iBus_cmd_payload_pc[31:0]
 -
 @28
 tb.u_dut.core_u_led_mem.io_led_mem_wr
-@22
-tb.u_dut.core_u_led_mem.io_led_mem_wr_addr[12:0]
-tb.u_dut.core_u_led_mem.io_led_mem_wr_data[20:0]
 @200
 -
 -
@@ -34,17 +31,13 @@ tb.u_dut.core_u_led_mem.io_led_mem_wr_data[20:0]
 -Hub75Streamer
 @200
 -
-@28
-tb.u_dut.core_u_hub75_streamer.osc_clk
-tb.u_dut.core_u_hub75_streamer.osc_reset_
-@200
 -
-@22
+@24
 tb.u_dut.core_u_hub75_streamer.col_cntr_value[4:0]
 @28
 tb.u_dut.core_u_hub75_streamer.panel_cntr_value
-tb.u_dut.core_u_hub75_streamer.bit_cntr_value[1:0]
 @24
+tb.u_dut.core_u_hub75_streamer.bit_cntr_value[1:0]
 tb.u_dut.core_u_hub75_streamer.row_cntr_value[2:0]
 @200
 -
@@ -54,9 +47,6 @@ tb.u_dut.core_u_hub75_streamer.cur_state_string[87:0]
 -
 @28
 tb.u_dut.core_u_hub75_streamer.io_led_mem_rd
-@22
-tb.u_dut.core_u_hub75_streamer.io_led_mem_rd_addr[12:0]
-tb.u_dut.core_u_hub75_streamer.io_led_mem_rd_data[20:0]
 @200
 -
 @28
@@ -82,6 +72,8 @@ tb.u_dut.core_u_hub75_streamer.output_fifo_wr_payload[6:0]
 (6)tb.u_dut.core_u_hub75_streamer.output_fifo_wr_payload[6:0]
 @1401200
 -group_end
+@8024
+tb.u_dut.core_u_hub75_streamer.u_output_fifo_io_availability[5:0]
 @200
 -
 -
@@ -105,14 +97,20 @@ tb.u_dut.core_u_hub75_streamer.io_rgb_payload[6:0]
 @200
 -
 -
-@28
-tb.u_dut.core_u_hub75phy.osc_reset_
-tb.u_dut.core_u_hub75phy.osc_clk
-@200
 -
 @28
 tb.u_dut.core_u_hub75phy.force_clear_desync
 tb.u_dut.core_u_hub75phy.force_clear_no_data
+@200
+-
+@24
+tb.u_dut.core_u_hub75phy.row_cntr_value[2:0]
+tb.u_dut.core_u_hub75phy.col_cntr_value[6:0]
+tb.u_dut.core_u_hub75phy.bit_cntr_value[1:0]
+@28
+tb.u_dut.core_u_hub75phy.bit_cntr_value[1:0]
+@29
+tb.u_dut.core_u_hub75phy.bit_cntr_value[1:0]
 @200
 -
 @800200
