@@ -57,7 +57,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
     noIoPrefix()
 
     val main_clk = Bool
-    val main_clk_speed = if (isSim) 7 MHz else 50 MHz
+    val main_clk_speed = if (isSim) 2 MHz else 50 MHz
 
     val osc_src = if (isSim) new Area {
         main_clk    := io.clk25
