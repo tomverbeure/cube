@@ -123,7 +123,9 @@ class CubeTop(isSim : Boolean = true) extends Component {
         // LED memory
         //============================================================
 
-        val u_led_mem = new LedMem(ledMemConfig)
+        val u_led_mem = new LedMem(ledMemConfig, isSim)
+        u_led_mem.io.led_mem_b_wr       := False
+        u_led_mem.io.led_mem_b_wr_data  := 0
 
         val led_mem_apb_regs = u_led_mem.driveFrom(Apb3SlaveFactory(u_cpu.io.led_mem_apb), 0x0)
 
@@ -132,9 +134,9 @@ class CubeTop(isSim : Boolean = true) extends Component {
         //============================================================
 
         val u_hub75_streamer = new Hub75Streamer(hub75Config, ledMemConfig)
-        u_hub75_streamer.io.led_mem_rd        <> u_led_mem.io.led_mem_rd
-        u_hub75_streamer.io.led_mem_rd_addr   <> u_led_mem.io.led_mem_rd_addr
-        u_hub75_streamer.io.led_mem_rd_data   <> u_led_mem.io.led_mem_rd_data
+        u_hub75_streamer.io.led_mem_rd        <> u_led_mem.io.led_mem_b_req
+        u_hub75_streamer.io.led_mem_rd_addr   <> u_led_mem.io.led_mem_b_addr
+        u_hub75_streamer.io.led_mem_rd_data   <> u_led_mem.io.led_mem_b_rd_data
 
         val hub75_streamer_regs = u_hub75_streamer.driveFrom(Apb3SlaveFactory(u_cpu.io.hub75_streamer_apb), 0x0)
 
