@@ -103,14 +103,18 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     val bit_cntr_p1       = Delay(bit_cntr.value, 2)
     val sof_p1            = Delay((col_cntr === 0 && panel_cntr === 0 && row_cntr === 0 && bit_cntr === 0), 2)
 
+    // Standardize to color component 8-bit value before applying to 8-bit gamma table
+    val led_mem_r = io.led_mem_rd_data((ledMemConf.bpc * 1 -1) downto ledMemConf.bpc * 0) ## U(0, 8-ledMemConf.bpc bits)
+    val led_mem_g = io.led_mem_rd_data((ledMemConf.bpc * 2 -1) downto ledMemConf.bpc * 1) ## U(0, 8-ledMemConf.bpc bits)
+    val led_mem_b = io.led_mem_rd_data((ledMemConf.bpc * 3 -1) downto ledMemConf.bpc * 2) ## U(0, 8-ledMemConf.bpc bits)
+
+    val r = (led_mem_r >> (bit_cntr_p1 + (8-conf.bpc)))(0)
+    val g = (led_mem_g >> (bit_cntr_p1 + (8-conf.bpc)))(0)
+    val b = (led_mem_b >> (bit_cntr_p1 + (8-conf.bpc)))(0)
 
     val r0  = RegInit(False)
     val g0  = RegInit(False)
     val b0  = RegInit(False)
-
-    val r = (io.led_mem_rd_data((ledMemConf.bpc * 1 -1) downto ledMemConf.bpc * 0).resize(8) >> (bit_cntr_p1 + (8-conf.bpc)))(0)
-    val g = (io.led_mem_rd_data((ledMemConf.bpc * 2 -1) downto ledMemConf.bpc * 1).resize(8) >> (bit_cntr_p1 + (8-conf.bpc)))(0)
-    val b = (io.led_mem_rd_data((ledMemConf.bpc * 3 -1) downto ledMemConf.bpc * 2).resize(8) >> (bit_cntr_p1 + (8-conf.bpc)))(0)
 
     output_fifo_wr.valid    := False
     when(led_mem_rd_p1){

@@ -96,7 +96,7 @@ class LedMem(conf: LedMemConfig, isSim: Boolean = true) extends Component {
             io.led_mem_a_wr   := True
             io.led_mem_a_addr := led_mem_a_wr_addr
         }
-        busCtrl.nonStopWrite(io.led_mem_a_wr_data, 0)
+        io.led_mem_a_wr_data  := mem_a_wr_data
 
         busCtrl.multiCycleRead(mapping, 2)
         busCtrl.onReadPrimitive(mapping, false, null){
