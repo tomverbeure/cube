@@ -3,11 +3,10 @@
 
 #include "reg.h"
 #include "top_defines.h"
+#include "led_render.h"
 
 #include "../movie/palette.h"
 #include "../movie/ricks.h"
-
-#define NR_LEDS     384
 
 static inline uint32_t rdcycle(void) {
     uint32_t cycle;
@@ -35,6 +34,7 @@ void wait(int cycles)
     while ((rdcycle() - start) <= cycles);
 #endif
 }
+
 
 
 #define WAIT_CYCLES 4000000
@@ -144,6 +144,8 @@ int main() {
 //    led_mem_fill(128, 64, 32);
 
     REG_WR(LED_DIR, 0xff);
+
+    led_render_clear_leds();
 
 //    while(1){
 //        led_mem_effect();

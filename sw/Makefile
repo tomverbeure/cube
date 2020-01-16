@@ -2,7 +2,7 @@
 MEM_BYTES		= 24576
 MEM_WORDS       = 6144
 
-OBJ_FILES       = start.o progmem.o
+OBJ_FILES       = start.o main.o led_render.o
 
 TOOLS_PREFIX    = /opt/riscv32i/bin
 TARGET          = $(TOOLS_PREFIX)/riscv32-unknown-elf
