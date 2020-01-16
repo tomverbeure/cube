@@ -103,14 +103,28 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     val bit_cntr_p1       = Delay(bit_cntr.value, 2)
     val sof_p1            = Delay((col_cntr === 0 && panel_cntr === 0 && row_cntr === 0 && bit_cntr === 0), 2)
 
-    // Standardize to color component 8-bit value before applying to 8-bit gamma table
-    val led_mem_r = io.led_mem_rd_data((ledMemConf.bpc * 1 -1) downto ledMemConf.bpc * 0) ## U(0, 8-ledMemConf.bpc bits)
-    val led_mem_g = io.led_mem_rd_data((ledMemConf.bpc * 2 -1) downto ledMemConf.bpc * 1) ## U(0, 8-ledMemConf.bpc bits)
-    val led_mem_b = io.led_mem_rd_data((ledMemConf.bpc * 3 -1) downto ledMemConf.bpc * 2) ## U(0, 8-ledMemConf.bpc bits)
+    // Convert from ledMemConf.bpc to conf.bpc
+    val led_mem_r = io.led_mem_rd_data((ledMemConf.bpc * 1 -1) downto ledMemConf.bpc * 0) ## U(0, 8-ledMemConf.bpc bits) >> (8-conf.bpc)
+    val led_mem_g = io.led_mem_rd_data((ledMemConf.bpc * 2 -1) downto ledMemConf.bpc * 1) ## U(0, 8-ledMemConf.bpc bits) >> (8-conf.bpc)
+    val led_mem_b = io.led_mem_rd_data((ledMemConf.bpc * 3 -1) downto ledMemConf.bpc * 2) ## U(0, 8-ledMemConf.bpc bits) >> (8-conf.bpc)
 
-    val r = (led_mem_r >> (bit_cntr_p1 + (8-conf.bpc)))(0)
-    val g = (led_mem_g >> (bit_cntr_p1 + (8-conf.bpc)))(0)
-    val b = (led_mem_b >> (bit_cntr_p1 + (8-conf.bpc)))(0)
+    val gammaTable = for(index <-  0 to (1<<conf.bpc)-1) yield {
+        val ratio = index.toFloat / ((1<<conf.bpc)-1).toFloat
+        val gammaValue = Math.pow(ratio, 2.2) * ((1<<conf.bpc)-1)
+        U(gammaValue.toInt, conf.bpc bits)
+    }
+
+    val gamma_rom_r = Mem(UInt(conf.bpc bits), initialContent = gammaTable)
+    val gamma_rom_g = Mem(UInt(conf.bpc bits), initialContent = gammaTable)
+    val gamma_rom_b = Mem(UInt(conf.bpc bits), initialContent = gammaTable)
+
+    val r_gamma = gamma_rom_r.readAsync(U(led_mem_r))
+    val g_gamma = gamma_rom_g.readAsync(U(led_mem_g))
+    val b_gamma = gamma_rom_b.readAsync(U(led_mem_b))
+
+    val r = (r_gamma >> bit_cntr_p1)(0)
+    val g = (g_gamma >> bit_cntr_p1)(0)
+    val b = (b_gamma >> bit_cntr_p1)(0)
 
     val r0  = RegInit(False)
     val g0  = RegInit(False)

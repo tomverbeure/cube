@@ -7,7 +7,10 @@ HEX2BIN    = ../misc/hex2bin.py
 ROM_FILES = CubeTop.v_toplevel_core_u_cpu_u_cpu_ram_ram_symbol0.bin \
 		    CubeTop.v_toplevel_core_u_cpu_u_cpu_ram_ram_symbol1.bin \
 		    CubeTop.v_toplevel_core_u_cpu_u_cpu_ram_ram_symbol2.bin \
-		    CubeTop.v_toplevel_core_u_cpu_u_cpu_ram_ram_symbol3.bin
+		    CubeTop.v_toplevel_core_u_cpu_u_cpu_ram_ram_symbol3.bin \
+			CubeTop.v_toplevel_core_u_hub75_streamer_gamma_rom_r.bin \
+			CubeTop.v_toplevel_core_u_hub75_streamer_gamma_rom_g.bin \
+			CubeTop.v_toplevel_core_u_hub75_streamer_gamma_rom_b.bin
 
 all: tb $(ROM_FILES)
 	./tb
@@ -41,6 +44,11 @@ CubeTop.v_toplevel_core_u_cpu_u_cpu_ram_ram_symbol3.hex: ../sw/progmem.bin
 
 waves:
 	gtkwave waves.vcd waves.gtkw &
+
+CubeTop.v_toplevel_core_u_hub75_streamer_gamma_rom_r.bin \
+CubeTop.v_toplevel_core_u_hub75_streamer_gamma_rom_g.bin \
+CubeTop.v_toplevel_core_u_hub75_streamer_gamma_rom_b.bin :
+	cp ../spinal/*gamma_rom*.bin .
 
 clean:
 	\rm -f *.bin *.hex tb *.vcd
