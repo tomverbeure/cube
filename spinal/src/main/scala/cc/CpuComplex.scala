@@ -31,7 +31,7 @@ object CpuComplexConfig{
         onChipRamSize             = 24 kB,
         onChipRamBinFile          = null,
         pipelineDBus              = true,
-        pipelineMainBus           = true,
+        pipelineMainBus           = false,
         pipelineApbBridge         = true,
         cpuPlugins = ArrayBuffer(
             new IBusSimplePlugin(
