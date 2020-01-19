@@ -14,33 +14,36 @@ class CubeTop(isSim : Boolean = true) extends Component {
 
     val panels = ArrayBuffer[PanelInfo]()
 
-    // 4 standing faces
-    panels += PanelInfo(-1, 1, 1,       0,       1,-1, 0)
-    panels += PanelInfo(-1, 0, 1,       1,       1,-1, 0)
+    if (!isSim){
+        //                                                  
+        panels += PanelInfo( 1, 1, 1,       1, true,    90,   0,-1,-1)
+        panels += PanelInfo( 1, 0, 1,       1, false,   90,   0,-1,-1)
 
-    if (!isSim && false){
-        panels += PanelInfo( 1, 1, 1,       2,       0,-1,-1)
-        panels += PanelInfo( 1, 0, 1,       3,       0,-1,-1)
+        if (false){
+        panels += PanelInfo( 1, 1,-1,       4, true,    0,    -1,-1, 0)
+        panels += PanelInfo( 1, 0,-1,       5, false,   0,    -1,-1, 0)
 
-        panels += PanelInfo( 1, 1,-1,       4,      -1,-1, 0)
-        panels += PanelInfo( 1, 0,-1,       5,      -1,-1, 0)
-
-        panels += PanelInfo(-1, 1,-1,       6,       0,-1, 1)
-        panels += PanelInfo(-1, 0,-1,       7,       0,-1, 1)
+        panels += PanelInfo(-1, 1,-1,       6, true,    0,     0,-1, 1)
+        panels += PanelInfo(-1, 0,-1,       7, false,   0,     0,-1, 1)
 
         // top face
-        panels += PanelInfo(-1, 1,-1,       8,       1, 0, 1)
-        panels += PanelInfo(-1, 1, 0,       9,       1, 0, 1)
+        panels += PanelInfo(-1, 1,-1,       8, true,    0,     1, 0, 1)
+        panels += PanelInfo(-1, 1, 0,       9, false,   0,     1, 0, 1)
 
         // bottom face
-        panels += PanelInfo(-1,-1, 1,      10,       1, 0,-1)
-        panels += PanelInfo(-1,-1, 0,      11,       1, 0,-1)
+        panels += PanelInfo(-1,-1, 1,      10, true,    0,     1, 0,-1)
+        panels += PanelInfo(-1,-1, 0,      11, false,   0,     1, 0,-1)
+        }
     }
+
+    //                              Side   Top      Rot 
+    panels += PanelInfo(-1, 1, 1,     0,   true,    180,    1,-1, 0)
+    panels += PanelInfo(-1, 0, 1,     0,   false,   180,    1,-1, 0)
 
     val hub75Config = Hub75Config(
                         panel_rows    = 16,
                         panel_cols    = 32,
-                        bpc           = if (isSim) 4 else 7,
+                        bpc           = if (isSim) 7 else 7,
                         panels        = panels.toArray
                       )
 
@@ -57,7 +60,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
     noIoPrefix()
 
     val main_clk = Bool
-    val main_clk_speed = if (isSim) 2 MHz else 50 MHz
+    val main_clk_speed = if (isSim) 50 MHz else 50 MHz
 
     val osc_src = if (isSim) new Area {
         main_clk    := io.clk25

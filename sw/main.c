@@ -46,9 +46,9 @@ void led_mem_fill(int buffer_nr, unsigned char r, unsigned char g, unsigned char
     }
 }
 
-void led_mem_wr(int buffer_nr, int x, int y, unsigned char r, unsigned char g, unsigned char b)
+void led_mem_wr(int buffer_nr, int side, int x, int y, unsigned char r, unsigned char g, unsigned char b)
 {
-        MEM_WR(LED_MEM, buffer_nr * 32 * 32 + y*32 + x, r | (g<<8) | (b<<16));
+        MEM_WR(LED_MEM, buffer_nr * 6 * 32 * 32 + side * 32 * 32 + y*32 + x, r | (g<<8) | (b<<16));
 }
 
 void led_mem_effect(int buffer_nr)
@@ -66,33 +66,37 @@ void led_mem_effect(int buffer_nr)
 
 void led_mem_stripes(int buffer_nr)
 {
-    for(int row=0;row<32;++row){
-        for(int col=0;col<32;++col){
-            led_mem_wr(buffer_nr, col, row, 
-                            (col % 3) == 0 ? 255 : 0, 
-                            (col % 3) == 1 ? 255 : 0, 
-                            (col % 3) == 2 ? 255 : 0);
-        }
+    for(int side = 0; side < 6; ++side){
+	    for(int row=0;row<32;++row){
+	        for(int col=0;col<32;++col){
+	            led_mem_wr(buffer_nr, side, col, row, 
+	                            (col % 3) == 0 ? 255 : 0, 
+	                            (col % 3) == 1 ? 255 : 0, 
+	                            (col % 3) == 2 ? 255 : 0);
+	        }
+	    }
     }
 }
 
 void led_mem_rows(int buffer_nr)
 {
-    for(int row=0;row<32;++row){
-        for(int col=0;col<32;++col){
-            if (col<10){
-                led_mem_wr(buffer_nr, col, row, row*7, 0, 0);
-            } 
-            else if (col<20){
-                led_mem_wr(buffer_nr, col, row, 0, row*7, 0);
-            }
-            else if (col<30){
-                led_mem_wr(buffer_nr, col, row, 0, 0, row*7);
-            }
-            else{
-                led_mem_wr(buffer_nr, col, row, 0, row*7, row*7);
-            }
-        }
+    for(int side=0; side<6; side++){
+	    for(int row=0;row<32;++row){
+	        for(int col=0;col<32;++col){
+	            if (col<10){
+	                led_mem_wr(buffer_nr, side, col, row, row*7, 0, 0);
+	            } 
+	            else if (col<20){
+	                led_mem_wr(buffer_nr, side, col, row, 0, row*7, 0);
+	            }
+	            else if (col<30){
+	                led_mem_wr(buffer_nr, side, col, row, 0, 0, row*7);
+	            }
+	            else{
+	                led_mem_wr(buffer_nr, side, col, row, 0, row*7, row*7);
+	            }
+	        }
+	    }
     }
 }
 
@@ -100,21 +104,23 @@ void led_mem_rick(int buffer_nr, int frame_nr)
 {
     unsigned char *ptr = ricks_bin + frame_nr * 32 * 23;
 
-    for(int row=0; row<32; ++row){
-        for(int col=0;col<32;++col){
-            if (row < 4 || row >= 27){
-                led_mem_wr(buffer_nr, col, row, 0, 0, 0);
-            }
-            else{
-                unsigned char val = *ptr;
-                led_mem_wr(buffer_nr, col, row, 
-                                palette_bin[val * 3],
-                                palette_bin[val * 3 + 1],
-                                palette_bin[val * 3 + 2]);
-                ++ptr;
-            }
-
-        }
+    for(int side = 0; side < 6; ++side){
+	    for(int row=0; row<32; ++row){
+	        for(int col=0;col<32;++col){
+	            if (row < 4 || row >= 27){
+	                led_mem_wr(buffer_nr, side, col, row, side == 0 || side == 3 ? 32 : 0, side == 1 || side == 4 ? 32 : 0 , side == 2 || side == 5 ? 32 : 0);
+	            }
+	            else{
+	                unsigned char val = *ptr;
+	                led_mem_wr(buffer_nr, side, col, row, 
+	                                palette_bin[val * 3],
+	                                palette_bin[val * 3 + 1],
+	                                palette_bin[val * 3 + 2]);
+	                ++ptr;
+	            }
+	
+	        }
+	    }
     }
 }
 
@@ -160,6 +166,7 @@ int main() {
         int scratch_buf = hub75_get_scratch_buffer();
         led_mem_rick(scratch_buf, frame_cntr / 16);
         REG_WR_FIELD(HUB75_STREAMER_CONFIG, BUFFER_NR, scratch_buf);
+        while(1){}
         frame_cntr = (frame_cntr + 1) % 256;
     }
 
