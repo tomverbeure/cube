@@ -16,12 +16,8 @@ class CubeTop(isSim : Boolean = true) extends Component {
 
     if (!isSim){
         //                                                  
-        panels += PanelInfo( 1, 1, 1,       1, true,    90,   0,-1,-1)
-        panels += PanelInfo( 1, 0, 1,       1, false,   90,   0,-1,-1)
 
         if (false){
-        panels += PanelInfo( 1, 1,-1,       4, true,    0,    -1,-1, 0)
-        panels += PanelInfo( 1, 0,-1,       5, false,   0,    -1,-1, 0)
 
         panels += PanelInfo(-1, 1,-1,       6, true,    0,     0,-1, 1)
         panels += PanelInfo(-1, 0,-1,       7, false,   0,     0,-1, 1)
@@ -34,7 +30,14 @@ class CubeTop(isSim : Boolean = true) extends Component {
         panels += PanelInfo(-1,-1, 1,      10, true,    0,     1, 0,-1)
         panels += PanelInfo(-1,-1, 0,      11, false,   0,     1, 0,-1)
         }
+
+        panels += PanelInfo( 1, 1,-1,       2, true,    0,    -1,-1, 0)
+        panels += PanelInfo( 1, 0,-1,       2, false,   0,    -1,-1, 0)
+
+        panels += PanelInfo( 1, 1, 1,       1, true,    90,   0,-1,-1)
+        panels += PanelInfo( 1, 0, 1,       1, false,   90,   0,-1,-1)
     }
+
 
     //                              Side   Top      Rot 
     panels += PanelInfo(-1, 1, 1,     0,   true,    180,    1,-1, 0)
@@ -43,7 +46,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
     val hub75Config = Hub75Config(
                         panel_rows    = 16,
                         panel_cols    = 32,
-                        bpc           = if (isSim) 7 else 7,
+                        bpc           = if (isSim) 6 else 6,
                         panels        = panels.toArray
                       )
 
