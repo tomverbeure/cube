@@ -14,7 +14,7 @@ all:
 	$(QUARTUS_DIR)/quartus_asm --read_settings_files=on --write_settings_files=off hwic-3g-cdma -c hwic-3g-cdma
 	$(QUARTUS_DIR)/quartus_sta hwic-3g-cdma -c hwic-3g-cdma
 
-update_ram: $(CPU_RAMS)
+update_ram: sw $(CPU_RAMS)
 	$(QUARTUS_DIR)/quartus_cdb hwic-3g-cdma -c hwic-3g-cdma --update_mif
 	$(QUARTUS_DIR)/quartus_asm --read_settings_files=on --write_settings_files=off hwic-3g-cdma -c hwic-3g-cdma
 
@@ -29,3 +29,6 @@ $(CPU_RAM2): ../sw/progmem2.mif
 
 $(CPU_RAM3): ../sw/progmem3.mif
 	cp $< $@
+
+sw:
+	cd ../sw && make

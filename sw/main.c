@@ -3,7 +3,8 @@
 
 #include "reg.h"
 #include "top_defines.h"
-#include "led_render.h"
+//#include "led_render.h"
+#include "hub75_streamer.h"
 
 #include "../movie/palette.h"
 #include "../movie/ricks.h"
@@ -128,30 +129,32 @@ void led_mem_rick(int buffer_nr, int frame_nr)
 
 void hub75_init()
 {
-    REG_WR_FIELD(HUB75_STREAMER_CONFIG, ENABLE, 1);
-    REG_WR_FIELD(HUB75_STREAMER_CONFIG, START, 1);
-    REG_WR_FIELD(HUB75_STREAMER_CONFIG, AUTO_RESTART, 1);
-    REG_WR_FIELD(HUB75_STREAMER_CONFIG, BUFFER_NR, 0);
+    REG_WR_FIELD(HUB75S_CONFIG, ENABLE, 1);
+    REG_WR_FIELD(HUB75S_CONFIG, START, 1);
+    REG_WR_FIELD(HUB75S_CONFIG, AUTO_RESTART, 1);
+    REG_WR_FIELD(HUB75S_CONFIG, BUFFER_NR, 0);
 }
 
 int hub75_get_scratch_buffer()
 {
     int row;
     do{
-        row = REG_RD_FIELD(HUB75_STREAMER_STATUS, CUR_ROW_NR);
+        row = REG_RD_FIELD(HUB75S_STATUS, CUR_ROW_NR);
     }
     while(row != 1);
 
-    return !REG_RD_FIELD(HUB75_STREAMER_STATUS, CUR_BUFFER_NR);
+    return !REG_RD_FIELD(HUB75S_STATUS, CUR_BUFFER_NR);
 }
 
 int main() {
 
 //    led_mem_fill(128, 64, 32);
 
+    hub75_streamer_init();
+
     REG_WR(LED_DIR, 0xff);
 
-    led_render_clear_leds();
+//    led_render_clear_leds();
 
 //    while(1){
 //        led_mem_effect();
@@ -164,9 +167,9 @@ int main() {
     int frame_cntr = 0;
     while(1){
         int scratch_buf = hub75_get_scratch_buffer();
-        led_mem_rick(scratch_buf, frame_cntr / 16);
-        REG_WR_FIELD(HUB75_STREAMER_CONFIG, BUFFER_NR, scratch_buf);
-        while(1){}
+        led_mem_rick(scratch_buf, frame_cntr / (256 / 16));
+        REG_WR_FIELD(HUB75S_CONFIG, BUFFER_NR, scratch_buf);
+//        while(1){}
         frame_cntr = (frame_cntr + 1) % 256;
     }
 

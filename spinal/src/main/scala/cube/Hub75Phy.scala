@@ -11,7 +11,7 @@ import spinal.lib.bus.simple._
 class Hub75Phy(oscSpeed: HertzNumber, conf: Hub75Config) extends Component {
 
     def osc_clk_speed = oscSpeed
-    def refresh_rate  = 60        // frame per second
+    def refresh_rate  = 120        // frame per second
 
     val sclk_desired  = (conf.panels.size * conf.panel_rows * conf.panel_cols / conf.pixels_per_clk)  * (1 << conf.bpc) * refresh_rate
     val sclk_ratio    = (osc_clk_speed.toLong / sclk_desired).toInt
