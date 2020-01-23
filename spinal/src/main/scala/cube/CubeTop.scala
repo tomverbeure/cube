@@ -41,7 +41,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
 
     //                              Side   Top      Rot 
     panels += PanelInfo(-1, 1, 1,     0,   true,    180,    1,-1, 0)
-    panels += PanelInfo(-1, 0, 1,     0,   false,   180,    1,-1, 0)
+    panels += PanelInfo(-1, 0, 1,     0,   true,    0,      1,-1, 0)
 
     val hub75Config = Hub75Config(
                         panel_rows    = 16,

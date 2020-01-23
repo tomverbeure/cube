@@ -12,24 +12,27 @@ class CubeShim(internalOsc : Boolean = true) extends Component {
 
     val io = new Bundle {
         val clk25       = in(Bool)
-//        val hwic_3      = out(Bool)
+        val hwic_3      = out(Bool)
         val hwic_11     = out(Bool)
         val hwic_12     = out(Bool)
         val hwic_13     = out(Bool)
         val hwic_14     = out(Bool)
-//        val hwic_15     = out(Bool)
+        val hwic_15     = out(Bool)
         val hwic_18     = out(Bool)
         val hwic_19     = out(Bool)
         val hwic_20     = out(Bool)
-//        val hwic_21     = out(Bool)
-//        val hwic_25     = out(Bool)
+        val hwic_21     = out(Bool)
+        val hwic_25     = out(Bool)
+//        val hwic_32     = out(Bool)
         val hwic_45     = out(Bool)
-//        val hwic_46     = out(Bool)
+        val hwic_46     = out(Bool)
         val hwic_47     = out(Bool)
-//        val hwic_48     = out(Bool)
+        val hwic_48     = out(Bool)
         val hwic_52     = out(Bool)
         val hwic_53     = out(Bool)
         val hwic_54     = out(Bool)
+        val hwic_55     = out(Bool)
+        val hwic_56     = out(Bool)
 
         val leds        = out(Bits(4 bits))
     }
@@ -40,7 +43,6 @@ class CubeShim(internalOsc : Boolean = true) extends Component {
     cubeTop.io.clk25        <> io.clk25
     cubeTop.io.leds         <> io.leds
 
-    /*
     cubeTop.io.hub75.clk    <> io.hwic_45
     cubeTop.io.hub75.lat    <> io.hwic_11
     cubeTop.io.hub75.oe_    <> io.hwic_3
@@ -53,8 +55,23 @@ class CubeShim(internalOsc : Boolean = true) extends Component {
     cubeTop.io.hub75.r1     <> io.hwic_52
     cubeTop.io.hub75.g1     <> io.hwic_18
     cubeTop.io.hub75.b1     <> io.hwic_48
-    */
 
+    // D, E / row(3), row(4)
+    io.hwic_12      := False      // PB2
+    io.hwic_14      := False      // PB6
+
+    // Alternate rgb0
+    io.hwic_25      :=  cubeTop.io.hub75.r0     // PF0
+    io.hwic_15      :=  cubeTop.io.hub75.g0     // PB8
+    io.hwic_56      :=  cubeTop.io.hub75.b0     // PE0
+
+    // Alternate rgb1
+    io.hwic_21      :=  cubeTop.io.hub75.r1     // PD6
+    io.hwic_55      :=  cubeTop.io.hub75.g1     // PD7
+    io.hwic_54      :=  cubeTop.io.hub75.b1     // PD5
+
+
+   /*
     cubeTop.io.hub75.clk    <> io.hwic_11
     cubeTop.io.hub75.lat    <> io.hwic_45
     cubeTop.io.hub75.oe_    <> io.hwic_20
@@ -67,6 +84,7 @@ class CubeShim(internalOsc : Boolean = true) extends Component {
     cubeTop.io.hub75.r1     <> io.hwic_18
     cubeTop.io.hub75.g1     <> io.hwic_52
     cubeTop.io.hub75.b1     <> io.hwic_14
+    */
 }
 
 
