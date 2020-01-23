@@ -9,14 +9,15 @@ import spinal.lib.bus.misc._
 import spinal.lib.bus.amba3.apb._
 
 object Hub75Streamer {
-    def getApb3Config() = Apb3Config(addressWidth = 4, dataWidth = 32)
+    def getApb3Config() = Apb3Config(addressWidth = 12, dataWidth = 32)
 }
-
 
 class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Component {
 
     val io = new Bundle {
         val rgb               = master(Stream(Bits(7 bits)))
+
+        val panel_infos       = in(Vec(PanelInfoHW(conf), conf.panels.size))
 
         val enable            = in(Bool)
         val start             = in(Bool)
@@ -30,6 +31,7 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
         val cur_panel_nr      = out(UInt(log2Up(conf.panels.size) bits))
         val cur_row_nr        = out(UInt(log2Up(conf.panel_rows/2) bits))
         val cur_bit_nr        = out(UInt(log2Up(conf.bpc) bits))
+
     }
 
     val output_fifo_wr = Stream(Bits(7 bits))
@@ -45,9 +47,7 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     io.cur_bit_nr    := bit_cntr.value
     io.eof           := row_cntr.willOverflow
 
-
-    val panel_info_vec  = Vec(conf.panels.map(_.toPanelInfoHW(conf)))
-    val cur_panel_info  = panel_info_vec(panel_cntr.value)
+    val cur_panel_info  = io.panel_infos(panel_cntr.value)
 
     object FsmState extends SpinalEnum {
         val FetchPhase0        = newElement()
@@ -165,6 +165,28 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     u_output_fifo.io.occupancy  <> output_fifo_occupancy
 
     def driveFrom(busCtrl: BusSlaveFactory, baseAddress: BigInt) = new Area {
+
+          // All panel info parameters are programmable for fast iteration
+          for(i <- 0 until conf.panels.length){
+              val addr = 0x100 + i * 0x40  
+
+              val info_hw = conf.panels(i).toPanelInfoHW(conf)
+
+              io.panel_infos(i).topLeftXCoord := busCtrl.createReadAndWrite(PanelInfoHW(conf).topLeftXCoord, addr + 0x00, 0) init(info_hw.topLeftXCoord)
+              io.panel_infos(i).topLeftYCoord := busCtrl.createReadAndWrite(PanelInfoHW(conf).topLeftXCoord, addr + 0x00, 2) init(info_hw.topLeftYCoord)
+              io.panel_infos(i).topLeftZCoord := busCtrl.createReadAndWrite(PanelInfoHW(conf).topLeftXCoord, addr + 0x00, 4) init(info_hw.topLeftZCoord)
+
+              io.panel_infos(i).xIncr := busCtrl.createReadAndWrite(PanelInfoHW(conf).xIncr, addr + 0x00, 8) init(info_hw.xIncr)
+              io.panel_infos(i).yIncr := busCtrl.createReadAndWrite(PanelInfoHW(conf).yIncr, addr + 0x00, 10) init(info_hw.yIncr)
+              io.panel_infos(i).zIncr := busCtrl.createReadAndWrite(PanelInfoHW(conf).zIncr, addr + 0x00, 12) init(info_hw.zIncr)
+
+              io.panel_infos(i).memAddrStartPh0 := busCtrl.createReadAndWrite(PanelInfoHW(conf).memAddrStartPh0, addr + 0x04, 0) init(info_hw.memAddrStartPh0)
+              io.panel_infos(i).memAddrStartPh1 := busCtrl.createReadAndWrite(PanelInfoHW(conf).memAddrStartPh1, addr + 0x08, 0) init(info_hw.memAddrStartPh1)
+
+              io.panel_infos(i).memAddrColMul := busCtrl.createReadAndWrite(PanelInfoHW(conf).memAddrColMul, addr + 0x0c, 0) init(info_hw.memAddrColMul)
+              io.panel_infos(i).memAddrRowMul := busCtrl.createReadAndWrite(PanelInfoHW(conf).memAddrRowMul, addr + 0x10, 0) init(info_hw.memAddrRowMul)
+          }
+
 
           // Config 
           val enable              = busCtrl.createReadAndWrite(Bool,              0x0, 0) init(False)

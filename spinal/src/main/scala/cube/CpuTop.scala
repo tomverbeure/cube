@@ -62,7 +62,7 @@ case class CpuTop() extends Component {
     //============================================================
     
     apbMapping += io.led_mem_apb              -> (0x20000, 64 kB)
-    apbMapping += io.hub75_streamer_apb       -> (0x30000, 256)
+    apbMapping += io.hub75_streamer_apb       -> (0x30000, 4 kB)
 
     //============================================================
     // Local APB decoder
