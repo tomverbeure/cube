@@ -32,6 +32,7 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
         val cur_row_nr        = out(UInt(log2Up(conf.panel_rows/2) bits))
         val cur_bit_nr        = out(UInt(log2Up(conf.bpc) bits))
 
+        val frame_cntr        = out(UInt(24 bits))
     }
 
     val output_fifo_wr = Stream(Bits(7 bits))
@@ -41,11 +42,14 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     val panel_cntr      = Counter(conf.panels.size, col_cntr.willOverflow)
     val bit_cntr        = Counter(conf.bpc, panel_cntr.willOverflow)
     val row_cntr        = Counter(conf.panel_rows/2, bit_cntr.willOverflow)
+    val frame_cntr      = Counter(io.frame_cntr.getWidth bits, row_cntr.willOverflow)
 
     io.cur_panel_nr  := panel_cntr.value
     io.cur_row_nr    := row_cntr.value
     io.cur_bit_nr    := bit_cntr.value
     io.eof           := row_cntr.willOverflow
+
+    io.frame_cntr     := frame_cntr.value
 
     val cur_panel_info  = io.panel_infos(panel_cntr.value)
 
@@ -199,6 +203,7 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
           val cur_row_nr          = busCtrl.createReadOnly(row_cntr.value,      0x04, 8)
           val cur_bit_nr          = busCtrl.createReadOnly(bit_cntr.value,      0x04, 24)
           val cur_buffer_nr_reg   = busCtrl.createReadOnly(io.cur_buffer_nr,    0x04, 31)
+          val frame_cntr          = busCtrl.createReadOnly(io.frame_cntr,       0x08, 0)
 
           val cur_buffer_nr = RegInit(U(0, 1 bits))
           when(io.eof){
@@ -215,6 +220,7 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
           cur_row_nr        := io.cur_row_nr
           cur_bit_nr        := io.cur_bit_nr
           cur_buffer_nr_reg := cur_buffer_nr
+          frame_cntr        := io.frame_cntr
     }
 
 }
