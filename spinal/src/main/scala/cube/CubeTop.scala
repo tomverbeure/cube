@@ -46,7 +46,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
     val hub75Config = Hub75Config(
                         panel_rows    = 16,
                         panel_cols    = 32,
-                        bpc           = if (isSim) 6 else 6,
+                        bpc           = if (isSim) 4 else 6,
                         panels        = panels.toArray
                       )
 
@@ -63,7 +63,7 @@ class CubeTop(isSim : Boolean = true) extends Component {
     noIoPrefix()
 
     val main_clk = Bool
-    val main_clk_speed = if (isSim) 50 MHz else 50 MHz
+    val main_clk_speed = if (isSim) 2 MHz else 50 MHz
 
     val osc_src = if (isSim) new Area {
         main_clk    := io.clk25
