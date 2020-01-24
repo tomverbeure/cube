@@ -164,13 +164,23 @@ int main() {
     led_mem_rick(0,0);
     hub75_init();
 
-    int frame_cntr = 0;
+    int prev_frame_cntr = REG_RD(HUB75S_FRAME_CNTR);
+    int movie_frame = 0;
+    int scratch_buf = hub75_get_scratch_buffer();
+
     while(1){
-        int scratch_buf = hub75_get_scratch_buffer();
-        led_mem_rick(scratch_buf, frame_cntr / (256 / 16));
+        led_mem_rick(scratch_buf, movie_frame);
+        movie_frame = (movie_frame + 1) % 16;
+
+        int cur_frame_cntr;
+        do{
+            cur_frame_cntr = REG_RD(HUB75S_FRAME_CNTR);
+        } while(cur_frame_cntr < prev_frame_cntr + 10);
+
         REG_WR_FIELD(HUB75S_CONFIG, BUFFER_NR, scratch_buf);
-//        while(1){}
-        frame_cntr = (frame_cntr + 1) % 256;
+        while(REG_RD_FIELD(HUB75S_STATUS, CUR_BUFFER_NR) != scratch_buf) 
+            ;
+        scratch_buf ^= 1;
     }
 
     while(1){
