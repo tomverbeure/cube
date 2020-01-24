@@ -31,7 +31,7 @@ t_panel_info panels[] = {
     { 1, 0,-1,       0, 1, 90,       -1,-1, 0 },
 
     // R1 - Front
-    { 1, 1, 1,       0, 1, 0,       0,-1,-1 },
+    { 1, 1, 1,       0, 1, 0,         0,-1,-1 },
     { 1, 0, 1,       0, 1, 180,       0,-1,-1 },
 
     // R0 - Right
@@ -81,7 +81,7 @@ void hub75_streamer_init(void)
         }
         else if (pi->sideRotation == 180){
             memAddrStartPh0     += panel_cols -1 + (panel_rows*2 -1) * panel_cols;
-            memAddrStartPh1     += panel_cols -1 + (panel_rows   -1) * panel_cols;
+            memAddrStartPh1     += panel_cols -1 + (panel_rows*3/2 -1) * panel_cols;
 
             if (!pi->sideTop){
                 memAddrStartPh0 -= panel_rows * panel_cols;
