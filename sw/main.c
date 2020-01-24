@@ -171,7 +171,7 @@ int main() {
 //    led_mem_fill(128, 64, 32);
 
     hub75_streamer_init();
-//    led_mem_stripes_rick();
+    led_mem_stripes_rick();
 
     REG_WR(LED_DIR, 0xff);
 
