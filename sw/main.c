@@ -127,9 +127,12 @@ void led_mem_rows(int buffer_nr)
 
 void led_mem_rick(int buffer_nr, int frame_nr)
 {
-    unsigned char *ptr = ricks_bin + frame_nr * 32 * 23;
 
-    for(int side = 0; side < 1; ++side){
+    for(int side = 0; side < 6; ++side){
+
+        int frame_nr_adj = (frame_nr + side) % 16;
+        unsigned char *ptr = ricks_bin + frame_nr_adj * 32 * 23;
+
 	    for(int row=0; row<32; ++row){
 	        for(int col=0;col<32;++col){
 	            if (row < 4 || row >= 27){
