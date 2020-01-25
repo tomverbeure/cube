@@ -26,6 +26,18 @@ const int panel_cols        = 32;
 int pixels_per_panel;
 
 t_panel_info panels[] = {
+    // L2 - Left
+    { 1, 1,-1,       0, 1, 270,       -1,-1, 0 },
+    { 1, 0,-1,       0, 1, 90,       -1,-1, 0 },
+
+    // L1 - Back
+    { 1, 1, 1,       0, 1, 180,         0,-1,-1 },
+    { 1, 0, 1,       0, 1, 0,       0,-1,-1 },
+
+    // L0 - Bottom
+    {-1, 1, 1,       0, 1, 270,      1,-1, 0 },
+    { 1, 0, 1,       0, 1, 90,       1,-1, 0 },
+
     // R2 - Top
     { 1, 1,-1,       0, 1, 270,       -1,-1, 0 },
     { 1, 0,-1,       0, 1, 90,       -1,-1, 0 },
@@ -38,21 +50,13 @@ t_panel_info panels[] = {
     {-1, 1, 1,       0, 1, 270,      1,-1, 0 },
     { 1, 0, 1,       0, 1, 90,       1,-1, 0 }
 
-/*
-    {-1, 0,-1,       7,       0,-1, 1 },
-    {-1, 1,-1,       8,       1, 0, 1 },
-    {-1, 1, 0,       9,       1, 0, 1 },
-    {-1,-1, 1,      10,       1, 0,-1 },
-    {-1,-1, 0,      11,       1, 0,-1 },
-    {-1,-1, 0,      -1,       1, 0,-1 },
-*/
 };
 
 void hub75_streamer_init(void)
 {
     pixels_per_panel  = panel_rows * panel_cols;
 
-    for(int i=0; i<6;++i){
+    for(int i=0; i<12;++i){
         t_panel_info *pi = &panels[i];
 
         int memAddrStartPh0     = pi->side * 2 * pixels_per_panel;
