@@ -23,7 +23,7 @@ typedef struct {
 
 const int panel_rows        = 16;
 const int panel_cols        = 32;
-const int pixels_per_panel  = panel_rows * panel_cols;
+int pixels_per_panel;
 
 t_panel_info panels[] = {
     // R2 - Top
@@ -50,6 +50,8 @@ t_panel_info panels[] = {
 
 void hub75_streamer_init(void)
 {
+    pixels_per_panel  = panel_rows * panel_cols;
+
     for(int i=0; i<6;++i){
         t_panel_info *pi = &panels[i];
 
