@@ -40,16 +40,20 @@ void wait(int cycles)
 
 #define WAIT_CYCLES 4000000
 
-void led_mem_fill(int buffer_nr, unsigned char r, unsigned char g, unsigned char b)
-{
-    for(int i=0;i<32*32;++i){
-        MEM_WR(LED_MEM, buffer_nr * 32 * 32 +i, r | (g<<8) | (b<<16));
-    }
-}
-
 void led_mem_wr(int buffer_nr, int side, int x, int y, unsigned char r, unsigned char g, unsigned char b)
 {
         MEM_WR(LED_MEM, buffer_nr * 6 * 32 * 32 + side * 32 * 32 + y*32 + x, r | (g<<8) | (b<<16));
+}
+
+void led_mem_fill(int buffer_nr, unsigned char r, unsigned char g, unsigned char b)
+{
+    for(int side = 0; side < 6; ++side){
+	    for(int row=0;row<32;++row){
+	        for(int col=0;col<32;++col){
+	            led_mem_wr(buffer_nr, side, col, row, r, g, b);
+	        }
+	    }
+    }
 }
 
 void led_mem_effect(int buffer_nr)
@@ -190,7 +194,8 @@ int main() {
     uint32_t scratch_buf = 1;
 
     while(1){
-        led_mem_rick(scratch_buf, movie_frame);
+        //led_mem_rick(scratch_buf, movie_frame);
+        led_mem_fill(scratch_buf, 0, 0, 64);
         movie_frame = (movie_frame + 1) % 16;
 
         uint32_t prev_frame_cntr = REG_RD(HUB75S_FRAME_CNTR);
