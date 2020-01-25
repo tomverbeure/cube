@@ -49,7 +49,7 @@ void led_mem_fill(int buffer_nr, unsigned char r, unsigned char g, unsigned char
 
 void led_mem_wr(int buffer_nr, int side, int x, int y, unsigned char r, unsigned char g, unsigned char b)
 {
-        MEM_WR(LED_MEM, buffer_nr * 3 * 32 * 32 + side * 32 * 32 + y*32 + x, r | (g<<8) | (b<<16));
+        MEM_WR(LED_MEM, buffer_nr * 6 * 32 * 32 + side * 32 * 32 + y*32 + x, r | (g<<8) | (b<<16));
 }
 
 void led_mem_effect(int buffer_nr)

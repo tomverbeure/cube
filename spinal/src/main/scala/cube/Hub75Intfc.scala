@@ -122,11 +122,21 @@ case class Hub75Intfc(nr_row_bits : Int) extends Bundle {
     val lat         = Bool
     val oe_         = Bool
     val row         = UInt(nr_row_bits bits)
+
     val r0          = Bool
     val g0          = Bool
     val b0          = Bool
+
     val r1          = Bool
     val g1          = Bool
     val b1          = Bool
+
+    val r2          = Bool
+    val g2          = Bool
+    val b2          = Bool
+
+    val r3          = Bool
+    val g3          = Bool
+    val b3          = Bool
 }
 

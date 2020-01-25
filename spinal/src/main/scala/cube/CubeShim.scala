@@ -49,42 +49,26 @@ class CubeShim(internalOsc : Boolean = true) extends Component {
     cubeTop.io.hub75.row(0) <> io.hwic_47
     cubeTop.io.hub75.row(1) <> io.hwic_13
     cubeTop.io.hub75.row(2) <> io.hwic_46
+
     cubeTop.io.hub75.r0     <> io.hwic_20
     cubeTop.io.hub75.g0     <> io.hwic_53
     cubeTop.io.hub75.b0     <> io.hwic_19
+
     cubeTop.io.hub75.r1     <> io.hwic_52
     cubeTop.io.hub75.g1     <> io.hwic_18
     cubeTop.io.hub75.b1     <> io.hwic_48
 
+    cubeTop.io.hub75.r2     <> io.hwic_25
+    cubeTop.io.hub75.g2     <> io.hwic_15
+    cubeTop.io.hub75.b2     <> io.hwic_56
+
+    cubeTop.io.hub75.r3     <> io.hwic_21
+    cubeTop.io.hub75.g3     <> io.hwic_55
+    cubeTop.io.hub75.b3     <> io.hwic_54
+
     // D, E / row(3), row(4)
     io.hwic_12      := False      // PB2
     io.hwic_14      := False      // PB6
-
-    // Alternate rgb0
-    io.hwic_25      :=  cubeTop.io.hub75.r0     // PF0
-    io.hwic_15      :=  cubeTop.io.hub75.g0     // PB8
-    io.hwic_56      :=  cubeTop.io.hub75.b0     // PE0
-
-    // Alternate rgb1
-    io.hwic_21      :=  cubeTop.io.hub75.r1     // PD6
-    io.hwic_55      :=  cubeTop.io.hub75.g1     // PD7
-    io.hwic_54      :=  cubeTop.io.hub75.b1     // PD5
-
-
-   /*
-    cubeTop.io.hub75.clk    <> io.hwic_11
-    cubeTop.io.hub75.lat    <> io.hwic_45
-    cubeTop.io.hub75.oe_    <> io.hwic_20
-    cubeTop.io.hub75.row(0) <> io.hwic_13
-    cubeTop.io.hub75.row(1) <> io.hwic_47
-    cubeTop.io.hub75.row(2) <> io.hwic_12
-    cubeTop.io.hub75.r0     <> io.hwic_54
-    cubeTop.io.hub75.g0     <> io.hwic_19
-    cubeTop.io.hub75.b0     <> io.hwic_53
-    cubeTop.io.hub75.r1     <> io.hwic_18
-    cubeTop.io.hub75.g1     <> io.hwic_52
-    cubeTop.io.hub75.b1     <> io.hwic_14
-    */
 }
 
 

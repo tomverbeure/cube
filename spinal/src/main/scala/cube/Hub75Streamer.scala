@@ -15,7 +15,7 @@ object Hub75Streamer {
 class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Component {
 
     val io = new Bundle {
-        val rgb               = master(Stream(Bits(7 bits)))
+        val rgb               = master(Stream(Bits(13 bits)))
 
         val panel_infos       = in(Vec(PanelInfoHW(conf), conf.panels.size))
 
@@ -28,18 +28,20 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
         val led_mem_rd_data   = in(Bits(ledMemConf.dataBits bits))
 
         val cur_buffer_nr     = in(UInt(1 bits))
-        val cur_panel_nr      = out(UInt(log2Up(conf.panels.size) bits))
+        val cur_panel_nr      = out(UInt(log2Up(conf.panels.size/2) bits))
         val cur_row_nr        = out(UInt(log2Up(conf.panel_rows/2) bits))
         val cur_bit_nr        = out(UInt(log2Up(conf.bpc) bits))
 
         val frame_cntr        = out(UInt(24 bits))
     }
 
-    val output_fifo_wr = Stream(Bits(7 bits))
-    val output_fifo_occupancy = UInt(log2Up(conf.panel_cols+1) bits)
+    val output_fifo_depth = 2 * conf.panel_cols * conf.panels.size/2
+    val output_fifo_wr = Stream(Bits(io.rgb.payload.getWidth bits))
+    val output_fifo_rd = Stream(Bits(io.rgb.payload.getWidth bits))
+    val output_fifo_availability = UInt(log2Up(output_fifo_depth+1) bits)
        
     val col_cntr        = Counter(conf.panel_cols)
-    val panel_cntr      = Counter(conf.panels.size, col_cntr.willOverflow)
+    val panel_cntr      = Counter(conf.panels.size/2, col_cntr.willOverflow)
     val bit_cntr        = Counter(conf.bpc, panel_cntr.willOverflow)
     val row_cntr        = Counter(conf.panel_rows/2, bit_cntr.willOverflow)
     val frame_cntr      = Counter(io.frame_cntr.getWidth bits, row_cntr.willOverflow)
@@ -51,18 +53,21 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
 
     io.frame_cntr     := frame_cntr.value
 
-    val cur_panel_info  = io.panel_infos(panel_cntr.value)
+    val cur_panel_info_0  = io.panel_infos(panel_cntr.value.resize(log2Up(conf.panels.size)))
+    val cur_panel_info_1  = io.panel_infos(panel_cntr.value.resize(log2Up(conf.panels.size)) + U(conf.panels.size/2))
 
     object FsmState extends SpinalEnum {
-        val FetchPhase0        = newElement()
-        val FetchPhase1        = newElement()
+        val FetchPhase0_0      = newElement()
+        val FetchPhase0_1      = newElement()
+        val FetchPhase1_0      = newElement()
+        val FetchPhase1_1      = newElement()
     }
 
-    val cur_state = Reg(FsmState()) init(FsmState.FetchPhase0)
+    val cur_state = Reg(FsmState()) init(FsmState.FetchPhase0_0)
 
     val led_mem_rd        = RegInit(False)
     val led_mem_rd_addr   = Reg(SInt(ledMemConf.addrBits+1 bits)) init(0)
-    val led_mem_phase     = RegInit(False)
+    val led_mem_phase     = Reg(UInt(2 bits)) init(0)
 
     val active            = RegInit(False).setWhen(io.start).clearWhen(io.eof || !io.enable)
 
@@ -76,32 +81,61 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     val ph0_addr = Reg(UInt(ledMemConf.addrBits bits)) init(0)
     val ph1_addr = Reg(UInt(ledMemConf.addrBits bits)) init(0)
 
-    switch(cur_state){
-        is(FsmState.FetchPhase0){
-            when(active && output_fifo_occupancy < (conf.panel_cols-2)){
-                led_mem_rd        := True
-                led_mem_rd_addr   := ((False ## (io.cur_buffer_nr * conf.total_nr_pixels)).resize(ledMemConf.addrBits+1).asSInt
-                                        + (cur_panel_info.memAddrStartPh0).resize(ledMemConf.addrBits+1).asSInt
-                                        + ((False ## row_cntr.value).asSInt * cur_panel_info.memAddrRowMul).resize(ledMemConf.addrBits+1)
-                                        + ((False ## col_cntr.value).asSInt * cur_panel_info.memAddrColMul).resize(ledMemConf.addrBits+1))
-                led_mem_phase     := False
 
-                cur_state   := FsmState.FetchPhase1
+    val cur_memAddrStart   =  ((cur_state === FsmState.FetchPhase0_0) ? cur_panel_info_0.memAddrStartPh0 |
+                              ((cur_state === FsmState.FetchPhase0_1) ? cur_panel_info_0.memAddrStartPh1 |
+                              ((cur_state === FsmState.FetchPhase1_0) ? cur_panel_info_1.memAddrStartPh0 |
+                                                                        cur_panel_info_1.memAddrStartPh1 )))
+
+    val cur_memAddrRowMul  =  ((cur_state === FsmState.FetchPhase0_0) ? cur_panel_info_0.memAddrRowMul |
+                              ((cur_state === FsmState.FetchPhase0_1) ? cur_panel_info_0.memAddrRowMul |
+                              ((cur_state === FsmState.FetchPhase1_0) ? cur_panel_info_1.memAddrRowMul |
+                                                                        cur_panel_info_1.memAddrRowMul )))
+
+    val cur_memAddrColMul  =  ((cur_state === FsmState.FetchPhase0_0) ? cur_panel_info_0.memAddrColMul |
+                              ((cur_state === FsmState.FetchPhase0_1) ? cur_panel_info_0.memAddrColMul |
+                              ((cur_state === FsmState.FetchPhase1_0) ? cur_panel_info_1.memAddrColMul |
+                                                                        cur_panel_info_1.memAddrColMul )))
+
+    val led_mem_rd_addr_comb = ((False ## (io.cur_buffer_nr * conf.total_nr_pixels)).resize(ledMemConf.addrBits+1).asSInt
+                                  + cur_memAddrStart.resize(ledMemConf.addrBits+1).asSInt
+                                  + ((False ## row_cntr.value).asSInt * cur_memAddrRowMul).resize(ledMemConf.addrBits+1)
+                                  + ((False ## col_cntr.value).asSInt * cur_memAddrColMul).resize(ledMemConf.addrBits+1))
+
+    switch(cur_state){
+        is(FsmState.FetchPhase0_0){
+          when(active && output_fifo_availability > 2){
+                led_mem_rd        := True
+                led_mem_rd_addr   := led_mem_rd_addr_comb
+                led_mem_phase     := 0
+
+                cur_state   := FsmState.FetchPhase0_1
             }
             .otherwise{
                 led_mem_rd        := False
             }
         }
-        is(FsmState.FetchPhase1){
+        is(FsmState.FetchPhase0_1){
             led_mem_rd        := True
-            led_mem_phase     := True
-            led_mem_rd_addr   := ((False ## (io.cur_buffer_nr * conf.total_nr_pixels)).resize(ledMemConf.addrBits+1).asSInt
-                                        + (cur_panel_info.memAddrStartPh1).resize(ledMemConf.addrBits+1).asSInt
-                                        + ((False ## row_cntr.value).asSInt * cur_panel_info.memAddrRowMul).resize(ledMemConf.addrBits+1)
-                                        + ((False ## col_cntr.value).asSInt * cur_panel_info.memAddrColMul).resize(ledMemConf.addrBits+1))
+            led_mem_phase     := 1
+            led_mem_rd_addr   := led_mem_rd_addr_comb
+
+            cur_state       := FsmState.FetchPhase1_0
+        }
+        is(FsmState.FetchPhase1_0){
+            led_mem_rd        := True
+            led_mem_phase     := 2
+            led_mem_rd_addr   := led_mem_rd_addr_comb
+
+            cur_state       := FsmState.FetchPhase1_1
+        }
+        is(FsmState.FetchPhase1_1){
+            led_mem_rd        := True
+            led_mem_phase     := 3
+            led_mem_rd_addr   := led_mem_rd_addr_comb
 
             col_cntr.increment()
-            cur_state       := FsmState.FetchPhase0
+            cur_state       := FsmState.FetchPhase0_0
         }
     }
 
@@ -109,7 +143,7 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     io.led_mem_rd_addr  := led_mem_rd_addr.resize(ledMemConf.addrBits).asUInt
 
     val led_mem_rd_p1     = RegNext(led_mem_rd) init(False)
-    val led_mem_phase_p1  = RegNext(led_mem_phase) init(False)
+    val led_mem_phase_p1  = RegNext(led_mem_phase) init(0)
     val bit_cntr_p1       = Delay(bit_cntr.value, 2)
     val sof_p1            = Delay((col_cntr === 0 && panel_cntr === 0 && row_cntr === 0 && bit_cntr === 0), 2)
 
@@ -136,37 +170,47 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     val g = (g_gamma >> bit_cntr_p1)(0)
     val b = (b_gamma >> bit_cntr_p1)(0)
 
-    val r0  = RegInit(False)
-    val g0  = RegInit(False)
-    val b0  = RegInit(False)
+    val r_vec = Reg(Bits(4 bits)) 
+    val g_vec = Reg(Bits(4 bits)) 
+    val b_vec = Reg(Bits(4 bits)) 
 
-    output_fifo_wr.valid    := False
     when(led_mem_rd_p1){
-        when(!led_mem_phase_p1){
-            r0  := r
-            g0  := g
-            b0  := b
-        }
-        .otherwise{
-            output_fifo_wr.valid    := True
-        }
+        r_vec(led_mem_phase_p1) := r
+        g_vec(led_mem_phase_p1) := g
+        b_vec(led_mem_phase_p1) := b
     }
 
-    output_fifo_wr.payload(0) := r0
-    output_fifo_wr.payload(1) := g0
-    output_fifo_wr.payload(2) := b0
-    output_fifo_wr.payload(3) := r
-    output_fifo_wr.payload(4) := g
-    output_fifo_wr.payload(5) := b
-    output_fifo_wr.payload(6) := sof_p1
+    val fifo_wr_p2      = RegNext(led_mem_rd_p1 && led_mem_phase_p1 === 3) init(False)
+    val sof_p2          = RegNext(sof_p1) init(False)
+
+    output_fifo_wr.valid  := fifo_wr_p2
+
+    output_fifo_wr.payload( 0) := r_vec(0)
+    output_fifo_wr.payload( 1) := g_vec(0)
+    output_fifo_wr.payload( 2) := b_vec(0)
+    output_fifo_wr.payload( 3) := r_vec(1)
+    output_fifo_wr.payload( 4) := g_vec(1)
+    output_fifo_wr.payload( 5) := b_vec(1)
+    output_fifo_wr.payload( 6) := r_vec(2)
+    output_fifo_wr.payload( 7) := g_vec(2)
+    output_fifo_wr.payload( 8) := b_vec(2)
+    output_fifo_wr.payload( 9) := r_vec(3)
+    output_fifo_wr.payload(10) := g_vec(3)
+    output_fifo_wr.payload(11) := b_vec(3)
+    output_fifo_wr.payload(12) := sof_p2
+
 
     val u_output_fifo = StreamFifo(
-                            dataType  = Bits(7 bits),
-                            depth     = conf.panel_cols
+                            dataType  = Bits(13 bits),
+                            depth     = output_fifo_depth
                         )
-    u_output_fifo.io.push   << output_fifo_wr
-    u_output_fifo.io.pop    >> io.rgb
-    u_output_fifo.io.occupancy  <> output_fifo_occupancy
+    u_output_fifo.io.push         << output_fifo_wr
+    u_output_fifo.io.pop          >> output_fifo_rd
+    u_output_fifo.io.availability <> output_fifo_availability
+
+    io.rgb.valid    := output_fifo_rd.valid && (!output_fifo_rd.payload(12) || output_fifo_availability <= 2)
+    io.rgb.payload  := output_fifo_rd.payload
+    output_fifo_rd.ready  := io.rgb.ready
 
     def driveFrom(busCtrl: BusSlaveFactory, baseAddress: BigInt) = new Area {
 

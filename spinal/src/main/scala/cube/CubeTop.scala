@@ -15,21 +15,16 @@ class CubeTop(isSim : Boolean = true) extends Component {
     val panels = ArrayBuffer[PanelInfo]()
 
     if (!isSim){
-        //                                                  
-
-        if (false){
-
-        panels += PanelInfo(-1, 1,-1,       6, true,    0,     0,-1, 1)
-        panels += PanelInfo(-1, 0,-1,       7, false,   0,     0,-1, 1)
+        panels += PanelInfo(-1, 1,-1,       5, true,    0,     0,-1, 1)
+        panels += PanelInfo(-1, 0,-1,       5, false,   0,     0,-1, 1)
 
         // top face
-        panels += PanelInfo(-1, 1,-1,       8, true,    0,     1, 0, 1)
-        panels += PanelInfo(-1, 1, 0,       9, false,   0,     1, 0, 1)
+        panels += PanelInfo(-1, 1,-1,       4, true,    0,     1, 0, 1)
+        panels += PanelInfo(-1, 1, 0,       4, false,   0,     1, 0, 1)
 
         // bottom face
-        panels += PanelInfo(-1,-1, 1,      10, true,    0,     1, 0,-1)
-        panels += PanelInfo(-1,-1, 0,      11, false,   0,     1, 0,-1)
-        }
+        panels += PanelInfo(-1,-1, 1,       3, true,    0,     1, 0,-1)
+        panels += PanelInfo(-1,-1, 0,       3, false,   0,     1, 0,-1)
 
         panels += PanelInfo( 1, 1,-1,       2, true,    0,    -1,-1, 0)
         panels += PanelInfo( 1, 0,-1,       2, false,   0,    -1,-1, 0)
