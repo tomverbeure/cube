@@ -179,6 +179,8 @@ int main() {
 
     REG_WR(LED_DIR, 0xff);
 
+    REG_WR(HUB75S_RGB_DIM, 0x404040);
+
 //    led_render_clear_leds();
 
 //    while(1){
@@ -194,8 +196,8 @@ int main() {
     uint32_t scratch_buf = 1;
 
     while(1){
-        //led_mem_rick(scratch_buf, movie_frame);
-        led_mem_fill(scratch_buf, 0, 0, 64);
+        led_mem_rick(scratch_buf, movie_frame);
+        //led_mem_fill(scratch_buf, 0, 0, 255);
         movie_frame = (movie_frame + 1) % 16;
 
         uint32_t prev_frame_cntr = REG_RD(HUB75S_FRAME_CNTR);

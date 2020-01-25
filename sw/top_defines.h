@@ -38,6 +38,8 @@
 
 #define HUB75S_FRAME_CNTR_ADDR  0x00030008
 
+#define HUB75S_RGB_DIM_ADDR  0x0003000c
+
 #define HUB75S_PANEL_INFOS_ADDR                         0x0030100
 
 #define HUB75S_PANEL_INFO_X_SIZE                        0x40

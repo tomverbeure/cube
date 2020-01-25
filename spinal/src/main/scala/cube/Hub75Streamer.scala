@@ -23,6 +23,10 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
         val start             = in(Bool)
         val eof               = out(Bool)
 
+        val r_dim             = in(UInt(8 bits))
+        val g_dim             = in(UInt(8 bits))
+        val b_dim             = in(UInt(8 bits))
+
         val led_mem_rd        = out(Bool)
         val led_mem_rd_addr   = out(UInt(ledMemConf.addrBits bits))
         val led_mem_rd_data   = in(Bits(ledMemConf.dataBits bits))
@@ -166,9 +170,13 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
     val g_gamma = gamma_rom_g.readAsync(U(led_mem_g))
     val b_gamma = gamma_rom_b.readAsync(U(led_mem_b))
 
-    val r = (r_gamma >> bit_cntr_p1)(0)
-    val g = (g_gamma >> bit_cntr_p1)(0)
-    val b = (b_gamma >> bit_cntr_p1)(0)
+    val r_dimmed = (r_gamma * io.r_dim)
+    val g_dimmed = (g_gamma * io.g_dim)
+    val b_dimmed = (b_gamma * io.b_dim)
+
+    val r = (r_dimmed.asBits.resizeLeft(r_gamma.getWidth) >> bit_cntr_p1)(0)
+    val g = (g_dimmed.asBits.resizeLeft(g_gamma.getWidth) >> bit_cntr_p1)(0)
+    val b = (b_dimmed.asBits.resizeLeft(b_gamma.getWidth) >> bit_cntr_p1)(0)
 
     val r_vec = Reg(Bits(4 bits)) 
     val g_vec = Reg(Bits(4 bits)) 
@@ -243,11 +251,18 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
           val buffer_nr           = busCtrl.createReadAndWrite(io.cur_buffer_nr,  0x0, 4) init(0)
 
           // Status
-          val cur_panel_nr        = busCtrl.createReadOnly(panel_cntr.value,    0x04)
-          val cur_row_nr          = busCtrl.createReadOnly(row_cntr.value,      0x04, 8)
-          val cur_bit_nr          = busCtrl.createReadOnly(bit_cntr.value,      0x04, 24)
-          val cur_buffer_nr_reg   = busCtrl.createReadOnly(io.cur_buffer_nr,    0x04, 31)
-          val frame_cntr          = busCtrl.createReadOnly(io.frame_cntr,       0x08, 0)
+          val cur_panel_nr        = busCtrl.createReadOnly(panel_cntr.value,      0x04)
+          val cur_row_nr          = busCtrl.createReadOnly(row_cntr.value,        0x04, 8)
+          val cur_bit_nr          = busCtrl.createReadOnly(bit_cntr.value,        0x04, 24)
+          val cur_buffer_nr_reg   = busCtrl.createReadOnly(io.cur_buffer_nr,      0x04, 31)
+
+          // Total number of frame transmitted
+          val frame_cntr          = busCtrl.createReadOnly(io.frame_cntr,         0x08, 0)
+
+          // Global dimming factor to control power
+          val r_dim               = busCtrl.createReadAndWrite(io.r_dim,          0xc,  0)  init(U(255))
+          val g_dim               = busCtrl.createReadAndWrite(io.g_dim,          0xc,  8)  init(U(255))
+          val b_dim               = busCtrl.createReadAndWrite(io.b_dim,          0xc,  16) init(U(255))
 
           val cur_buffer_nr = RegInit(U(0, 1 bits))
           when(io.eof){
@@ -260,10 +275,15 @@ class Hub75Streamer(conf: Hub75Config, ledMemConf: LedMemConfig) extends Compone
           io.start          := (start && !RegNext(start)) || restart
           io.cur_buffer_nr  := cur_buffer_nr
 
+          io.r_dim          := r_dim
+          io.g_dim          := g_dim
+          io.b_dim          := b_dim
+
           cur_panel_nr      := io.cur_panel_nr
           cur_row_nr        := io.cur_row_nr
           cur_bit_nr        := io.cur_bit_nr
           cur_buffer_nr_reg := cur_buffer_nr
+
           frame_cntr        := io.frame_cntr
     }
 
