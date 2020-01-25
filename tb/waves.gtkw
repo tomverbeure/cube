@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.90 (w)1999-2018 BSI
-[*] Thu Jan 16 05:36:20 2020
+[*] Fri Jan 24 05:20:36 2020
 [*]
 [dumpfile] "/home/tom/projects/cube/tb/waves.vcd"
-[dumpfile_mtime] "Thu Jan 16 05:35:16 2020"
-[dumpfile_size] 296110160
+[dumpfile_mtime] "Fri Jan 24 05:20:36 2020"
+[dumpfile_size] 30420992
 [savefile] "/home/tom/projects/cube/tb/waves.gtkw"
 [timestart] 0
 [size] 3159 1717
 [pos] -1 -1
-*-21.461666 4035880 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-20.461666 3140120 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.u_dut.
 [treeopen] tb.u_dut.core_u_cpu.
@@ -19,14 +19,27 @@
 [signals_width] 828
 [sst_expanded] 1
 [sst_vpaned_height] 554
+@28
+tb.u_dut.core_u_cpu.u_cpu.cpu_iBus_cmd_valid
+tb.u_dut.core_u_cpu.u_cpu.mainBusArbiter_io_iBus_cmd_ready
 @22
 tb.u_dut.core_u_cpu.u_cpu.cpu_iBus_cmd_payload_pc[31:0]
+@28
+tb.u_dut.core_u_cpu.u_cpu.mainBusArbiter_io_iBus_rsp_valid
+@22
+tb.u_dut.core_u_cpu.u_cpu.mainBusArbiter_io_iBus_rsp_payload_inst[31:0]
 @200
 -
 -
 @28
+tb.u_dut.core_u_cpu.main_clk
+@200
+-
+@28
+tb.u_dut.core_u_cpu.io_led_mem_apb_PSEL
 tb.u_dut.core_u_cpu.io_led_mem_apb_PENABLE
 tb.u_dut.core_u_cpu.io_led_mem_apb_PWRITE
+tb.u_dut.core_u_cpu.io_led_mem_apb_PREADY
 @22
 tb.u_dut.core_u_cpu.io_led_mem_apb_PADDR[15:0]
 @c00022
@@ -69,8 +82,6 @@ tb.u_dut.core_u_cpu.io_led_mem_apb_PWDATA[31:0]
 @22
 tb.u_dut.core_u_cpu.io_led_mem_apb_PRDATA[31:0]
 @28
-tb.u_dut.core_u_cpu.io_led_mem_apb_PREADY
-tb.u_dut.core_u_cpu.io_led_mem_apb_PSEL
 tb.u_dut.core_u_cpu.io_led_mem_apb_PSLVERROR
 @200
 -
@@ -79,7 +90,7 @@ tb.u_dut.core_u_led_mem.io_led_mem_a_addr[13:0]
 @28
 tb.u_dut.core_u_led_mem.io_led_mem_a_req
 tb.u_dut.core_u_led_mem.io_led_mem_a_wr
-@c00023
+@c00022
 tb.u_dut.core_u_led_mem.io_led_mem_a_wr_data[17:0]
 @28
 (0)tb.u_dut.core_u_led_mem.io_led_mem_a_wr_data[17:0]
@@ -100,7 +111,7 @@ tb.u_dut.core_u_led_mem.io_led_mem_a_wr_data[17:0]
 (15)tb.u_dut.core_u_led_mem.io_led_mem_a_wr_data[17:0]
 (16)tb.u_dut.core_u_led_mem.io_led_mem_a_wr_data[17:0]
 (17)tb.u_dut.core_u_led_mem.io_led_mem_a_wr_data[17:0]
-@1401201
+@1401200
 -group_end
 @200
 -
@@ -115,6 +126,9 @@ tb.u_dut.core_u_hub75_streamer.col_cntr_value[4:0]
 tb.u_dut.core_u_hub75_streamer.panel_cntr_value
 @24
 tb.u_dut.core_u_hub75_streamer.row_cntr_value[2:0]
+tb.u_dut.core_u_hub75_streamer.frame_cntr_value[23:0]
+@29
+tb.u_dut.core_u_hub75_streamer.io_cur_buffer_nr
 @200
 -
 @820
@@ -170,9 +184,6 @@ tb.u_dut.core_u_hub75_streamer.g
 tb.u_dut.core_u_hub75_streamer.b
 @200
 -
-@24
-tb.u_dut.core_u_hub75_streamer.bit_cntr_value[2:0]
-@200
 -
 @28
 tb.u_dut.core_u_hub75_streamer.led_mem_rd_p1
