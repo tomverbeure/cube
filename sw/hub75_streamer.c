@@ -25,6 +25,28 @@ const int panel_rows        = 16;
 const int panel_cols        = 32;
 int pixels_per_panel;
 
+typedef enum {
+    SIDE_LEFT       = 0,
+    SIDE_FRONT      = 1,
+    SIDE_RIGHT      = 2,
+    SIDE_BACK       = 3,
+    SIDE_TOP        = 4,
+    SIDE_BOTTOM     = 5
+} e_side_nr;
+
+typedef enum {
+    ORIENT_X_Y          = 0,
+    ORIENT_X_INV_Y      = 1,
+    ORIENT_INV_X_Y      = 2,
+    ORIENT_INV_X_INV_Y  = 3,
+
+    ORIENT_Y_X          = 4,
+    ORIENT_Y_INV_X      = 5,
+    ORIENT_INV_Y_X      = 6,
+    ORIENT_INV_Y_INV_X  = 7
+} e_orient;
+
+
 t_panel_info panels[] = {
     // L2 - Left
     { 1, 1,-1,       0, 1, 270,       -1,-1, 0 },
@@ -140,4 +162,62 @@ int hub75s_get_scratch_buffer(void)
 
     return !REG_RD_FIELD(HUB75S_STATUS, CUR_BUFFER_NR);
 }
+
+uint32_t hub75s_calc_phys_addr(int buffer, int log_addr)
+{
+    const uint32_t side_width  = HUB75S_SIDE_WIDTH;
+    const uint32_t side_height = HUB75S_SIDE_HEIGHT;
+    const uint32_t side_size   = HUB75S_SIDE_SIZE;
+    const uint32_t strip_width = HUB75S_STRIP_WIDTH;
+    const uint32_t strip_size  = HUB75S_STRIP_SIZE;
+    const uint32_t ring_size   = HUB75S_RING_SIZE;
+
+    uint32_t cur_ring_nr     = log_addr / ring_size;
+    log_addr = log_addr % ring_size;
+
+    uint32_t cur_strip_y_nr = log_addr  / strip_size;
+    uint32_t cur_strip_x_nr = (log_addr / side_width) & 3;
+
+    uint32_t y = (log_addr / strip_width) % side_height;
+    uint32_t x = log_addr % side_width;
+
+    const uint8_t side_nr_lut[3][3][4] = {
+        // Ring 0: | L | F | R | Ba
+        {
+            { SIDE_TOP,     SIDE_TOP,      SIDE_TOP,      SIDE_TOP      },
+            { SIDE_LEFT,    SIDE_FRONT,    SIDE_RIGHT,    SIDE_BACK     },
+            { SIDE_BOTTOM,  SIDE_BOTTOM,   SIDE_BOTTOM,   SIDE_BOTTOM   }
+        }
+    };
+
+    const uint8_t orient_class_lut[3][3][4] = {
+        // Ring 0: | L | F | R | Ba| 
+        {
+            // 
+            { ORIENT_INV_Y_X,   ORIENT_X_Y,    ORIENT_Y_INV_X,      ORIENT_INV_X_INV_Y     },
+            { ORIENT_X_Y,       ORIENT_X_Y,    ORIENT_X_Y,          ORIENT_X_Y             },
+            { ORIENT_Y_INV_X,   ORIENT_X_Y,    ORIENT_INV_Y_X,      ORIENT_Y_X             }
+        }
+    };
+
+    uint32_t cur_side_nr      = side_nr_lut     [cur_ring_nr][cur_strip_y_nr][cur_strip_x_nr];
+    uint32_t cur_orient_class = orient_class_lut[cur_ring_nr][cur_strip_y_nr][cur_strip_x_nr];
+
+    uint32_t cur_x            = (cur_orient_class == ORIENT_X_Y     || cur_orient_class == ORIENT_X_INV_Y)     ? x    :
+                                (cur_orient_class == ORIENT_INV_X_Y || cur_orient_class == ORIENT_INV_X_INV_Y) ? 31-x :
+                                (cur_orient_class == ORIENT_Y_X     || cur_orient_class == ORIENT_Y_INV_X)     ? y    :
+                                                                                                                 31-y ;
+
+    uint32_t cur_y            = (cur_orient_class == ORIENT_X_Y     || cur_orient_class == ORIENT_INV_X_Y)     ? y    :
+                                (cur_orient_class == ORIENT_X_INV_Y || cur_orient_class == ORIENT_INV_X_INV_Y) ? 31-y :
+                                (cur_orient_class == ORIENT_Y_X     || cur_orient_class == ORIENT_INV_Y_X)     ? x    :
+                                                                                                                 31-x ;
+
+    uint32_t phys_addr = cur_side_nr * side_size + (cur_y * 32) + cur_x;
+    phys_addr += buffer * 6 * side_size;
+
+    return phys_addr;
+}
+
+
 

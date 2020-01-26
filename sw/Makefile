@@ -11,8 +11,8 @@ ASFLAGS         = -march=rv32imc -mabi=ilp32
 LD              = $(TARGET)-gcc
 LDFLAGS         = -march=rv32imc -mabi=ilp32 -Wl,-Tsections.lds,-Map,progmem.map -ffreestanding -nostartfiles
 CC              = $(TARGET)-gcc
-CFLAGS          = -march=rv32imc -mabi=ilp32 -Wall -Wextra -pedantic -DFREQ=$(FREQ_PLL)000000 -O2
-#CFLAGS          = -march=rv32i -mabi=ilp32 -Wall -Wextra -pedantic -DFREQ=$(FREQ_PLL)000000 -Os -lto -msave-restore
+#CFLAGS          = -march=rv32imc -mabi=ilp32 -Wall -Wextra -pedantic -DFREQ=$(FREQ_PLL)000000 -O2
+CFLAGS          = -march=rv32imc -mabi=ilp32 -Wall -Wextra -Wpedantic -DFREQ=$(FREQ_PLL)000000 -O2
 OBJCOPY         = $(TARGET)-objcopy
 OBJDUMP         = $(TARGET)-objdump
 
@@ -57,7 +57,7 @@ progmem.bin: progmem.elf
 progmem4k.bin: progmem.elf
 	$(OBJCOPY) --pad-to=$(MEM_BYTES) -O binary $< $@
 
-progmem.elf: $(OBJ_FILES) top_defines.h sections.lds Makefile ../movie/ricks.h ../movie/palette.h
+progmem.elf: $(OBJ_FILES) global.h hub75_streamer.h reg.h top_defines.h sections.lds Makefile ../movie/ricks.h ../movie/palette.h
 	$(LD) $(LDFLAGS) -s -o $@ $(OBJ_FILES) > progmem.map
 
 progmem_dis.elf: $(OBJ_FILES) top_defines.h sections.lds Makefile

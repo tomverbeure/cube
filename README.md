@@ -101,9 +101,9 @@ Here is one such example:
 
 ```
 +---+---+---+---+---+---+
-| T | T | T | T | T | T |    
+| T | T | T | T | T | T |   
 +---+---+---+---+---+---+
-| B | L | F | R | Ba| L |
+| L | F | R | Ba| L | F |
 +---+---+---+---+---+---+
 | Bo| Bo| Bo| Bo| Bo| Bo|
 +---+---+---+---+---+---+
@@ -122,15 +122,16 @@ The image above is laid out on a rectangular logical address map, with a pitch t
 +---+---+---+---+---+---+---+---+
 | T | T | T | T | T | T | T | T |
 +---+---+---+---+---+---+---+---+
-| Ba| L | F | R | Ba| L | F | R |
+| L | F | R | Ba| L | F | R | Ba|
 +---+---+---+---+---+---+---+---+
 | Bo| Bo| Bo| Bo| Bo| Bo| Bo| Bo|
 +---+---+---+---+---+---+---+---+
 ```
 
 With the arrangement above, you can blit any image that is 32 pixels height and up to
-4 sized wide at any starting point of the ring and have correct roll-over behavior.
-(for images that are 6 sides wide, you'll still have to split in 2 blits.)
+5 sides wide at any starting point of the ring and have correct roll-over behavior.
+Since it makes no sense to have a image that's more than 4 sides wide (because the right
+would overwrite the left), that's fine.
 
 For the case above, the top and the bottom tiles will have different overflow
 behavior for each for the 4 members of the ring. For example if you are in L and
@@ -147,7 +148,7 @@ F-Bo-Ba-T:
 +---+---+---+---+---+---+---+---+
 | R | R | R | R | R | R | R | R |
 +---+---+---+---+---+---+---+---+
-| T | F | Bo| Ba| T | F | Bo| Ba|
+| F | Bo| Ba| T | F | Bo| Ba| T |
 +---+---+---+---+---+---+---+---+
 | L | L | L | L | L | L | L | L |
 +---+---+---+---+---+---+---+---+
@@ -159,7 +160,7 @@ L-Bo-R-T:
 +---+---+---+---+---+---+---+---+
 | Ba| Ba| Ba| Ba| Ba| Ba| Ba| Ba|
 +---+---+---+---+---+---+---+---+
-| T | L | Bo| R | T | L | Bo| R |
+| L | Bo| R | T | L | Bo| R | T |
 +---+---+---+---+---+---+---+---+
 | F | F | F | F | F | F | F | F |
 +---+---+---+---+---+---+---+---+
@@ -167,18 +168,18 @@ L-Bo-R-T:
 
 Calculation for:
 
-| Ba| L | F | R | Ba| L | F | R |
+| L | F | R | Ba| L | F | R | Ba|
 
 Given an address for a particular ring:
 
 ```
-strip_size = 8 * 32 * 32
+strip_size = 16 * 32 * 32
 side_size  = 32 * 32
 
 strip_y_nr = addr / strip_size
 strip_x_nr = (addr % strip_size) / side_size
 
-strip_class = [ Ba, L, F, R, Ba, L, F, R ][strip_x_nr]
+strip_class = [ L, F, R, Ba ][strip_x_nr & 3]
 if (strip_y_nr == 0) 
     side_nr = T
     orient_class = { 

@@ -37,6 +37,48 @@ void wait(int cycles)
 }
 
 
+uint16_t pacman_closed[11] = {
+    0b00011111000,
+    0b00111111100,
+    0b01111111110,
+    0b11111111111,
+    0b11111111111,
+    0b11111111111,
+    0b11111111111,
+    0b11111111111,
+    0b01111111110,
+    0b00111111100,
+    0b00011111000,
+};
+
+uint16_t pacman_open[11] = {
+    0b00011111000,
+    0b00111111100,
+    0b01111111110,
+    0b00011111111,
+    0b00000111111,
+    0b00000001111,
+    0b00000111111,
+    0b00011111111,
+    0b01111111110,
+    0b00111111100,
+    0b00011111000,
+};
+
+uint16_t pacman_test[11] = {
+    0b10000000000,
+    0b11000000000,
+    0b10100000000,
+    0b10010000000,
+    0b10001000000,
+    0b10000100000,
+    0b10000010000,
+    0b10000001000,
+    0b10000000100,
+    0b10000000010,
+    0b10000000001,
+};
+
 
 #define WAIT_CYCLES 4000000
 
@@ -54,6 +96,11 @@ void led_mem_fill(int buffer_nr, unsigned char r, unsigned char g, unsigned char
 	        }
 	    }
     }
+}
+
+void led_mem_clear(int buffer_nr)
+{
+    led_mem_fill(buffer_nr, 0, 0, 0);
 }
 
 void led_mem_effect(int buffer_nr)
@@ -152,6 +199,24 @@ void led_mem_rick(int buffer_nr, int frame_nr)
     }
 }
 
+void render_bitmap(uint16_t *bitmap, int size_x, int size_y, int buffer_nr, e_hub75_ring ring, int pos_x, int pos_y)
+{
+    for(int y=0; y<size_y;++y){
+        for(int x=0; x<size_x;++x){
+                //uint32_t bit = (bitmap[y] >> (size_x-1-x)) & 1;
+                uint32_t bit = (bitmap[y] >> (x)) & 1;
+                uint32_t log_addr = ring * HUB75S_RING_SIZE 
+                                    + ((pos_y+y) + HUB75S_SIDE_HEIGHT) * HUB75S_STRIP_WIDTH 
+                                    + (pos_x+x);
+                    
+                uint32_t phys_addr = hub75s_calc_phys_addr(buffer_nr, log_addr);
+
+                uint32_t color = bit ? 0x00ffff : 0x000000;
+
+                MEM_WR(LED_MEM, phys_addr, color);
+        }
+    }
+}
 
 
 int main() {
@@ -173,18 +238,34 @@ int main() {
 //   }
 
 //    led_mem_rows(0);
-    led_mem_rick(0,0);
+//    led_mem_rick(0,0);
 
     uint32_t movie_frame = 0;
     uint32_t scratch_buf = 1;
 
+    int pos_x = 0;
+    int pos_y = 10;
+
     while(1){
-        led_mem_rick(scratch_buf, movie_frame);
+        led_mem_clear(scratch_buf);
+        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 0*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), -7);
+        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 1*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), -3);
+        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 2*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 1);
+        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 5);
+        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 4*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 9);
+        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 5*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 13);
+        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 6*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 17);
+        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 7*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 21);
+        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 8*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 25);
+
+        //led_mem_rick(scratch_buf, movie_frame);
         //led_mem_fill(scratch_buf, 0, 0, 255);
         movie_frame = (movie_frame + 1) % 16;
 
+        pos_x = (pos_x + 1) % (4 * HUB75S_SIDE_WIDTH);
+
         uint32_t prev_frame_cntr = REG_RD(HUB75S_FRAME_CNTR);
-        while(REG_RD(HUB75S_FRAME_CNTR) < prev_frame_cntr + 14) ;
+        while(REG_RD(HUB75S_FRAME_CNTR) < prev_frame_cntr + 6) ;
 
         REG_WR_FIELD(HUB75S_CONFIG, BUFFER_NR, scratch_buf);
         while(REG_RD_FIELD(HUB75S_STATUS, CUR_BUFFER_NR) != scratch_buf) 
