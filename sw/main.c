@@ -154,35 +154,17 @@ void led_mem_rick(int buffer_nr, int frame_nr)
 
 
 
-void hub75_init()
-{
-    REG_WR_FIELD(HUB75S_CONFIG, ENABLE, 1);
-    REG_WR_FIELD(HUB75S_CONFIG, START, 1);
-    REG_WR_FIELD(HUB75S_CONFIG, AUTO_RESTART, 1);
-    REG_WR_FIELD(HUB75S_CONFIG, BUFFER_NR, 0);
-}
-
-int hub75_get_scratch_buffer()
-{
-    int row;
-    do{
-        row = REG_RD_FIELD(HUB75S_STATUS, CUR_ROW_NR);
-    }
-    while(row != 1);
-
-    return !REG_RD_FIELD(HUB75S_STATUS, CUR_BUFFER_NR);
-}
-
 int main() {
 
 //    led_mem_fill(128, 64, 32);
 
-    hub75_streamer_init();
+    hub75s_config();
+    hub75s_start();
 //    led_mem_stripes_rick();
 
     REG_WR(LED_DIR, 0xff);
 
-    REG_WR(HUB75S_RGB_DIM, 0x404040);
+    hub75s_dim(0x40, 0x40, 0x40);
 
 //    led_render_clear_leds();
 
@@ -192,10 +174,8 @@ int main() {
 
 //    led_mem_rows(0);
     led_mem_rick(0,0);
-    hub75_init();
 
     uint32_t movie_frame = 0;
-    //uint32_t scratch_buf = hub75_get_scratch_buffer();
     uint32_t scratch_buf = 1;
 
     while(1){

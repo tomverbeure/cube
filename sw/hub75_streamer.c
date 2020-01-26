@@ -52,7 +52,7 @@ t_panel_info panels[] = {
 
 };
 
-void hub75_streamer_init(void)
+void hub75s_config(void)
 {
     pixels_per_panel  = panel_rows * panel_cols;
 
@@ -114,5 +114,30 @@ void hub75_streamer_init(void)
         HUB75S_PI_REG_WR(i, MEM_ADDR_ROW_MUL, memAddrRowMul);
 
     }
+}
+
+
+void hub75s_start(void)
+{
+    REG_WR_FIELD(HUB75S_CONFIG, ENABLE, 1);
+    REG_WR_FIELD(HUB75S_CONFIG, START, 1);
+    REG_WR_FIELD(HUB75S_CONFIG, AUTO_RESTART, 1);
+    REG_WR_FIELD(HUB75S_CONFIG, BUFFER_NR, 0);
+}
+
+void hub75s_dim(unsigned char r_dim, unsigned char g_dim, unsigned char b_dim)
+{
+    REG_WR(HUB75S_RGB_DIM, (b_dim << 16) | (g_dim << 8) | r_dim);
+}
+
+int hub75s_get_scratch_buffer(void)
+{
+    int row;
+    do{
+        row = REG_RD_FIELD(HUB75S_STATUS, CUR_ROW_NR);
+    }
+    while(row != 1);
+
+    return !REG_RD_FIELD(HUB75S_STATUS, CUR_BUFFER_NR);
 }
 
