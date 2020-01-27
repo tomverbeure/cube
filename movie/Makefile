@@ -71,7 +71,7 @@ RICKS_FINAL = rick_32x23-00 \
 
 RICKS_FINAL_IDX  = $(RICKS_FINAL:=.idx)
 
-all: ricks.h palette.h
+all: ricks_compr.h palette.h
 
 # Convert into 1 file to force unique palette
 ricks_joined.gif: $(RICKS_ORIG_PNG)
@@ -84,11 +84,14 @@ ricks_joined.gif: $(RICKS_ORIG_PNG)
 %.idx: %.rgb palette.info
 	./palette_to_c.py palette.info $< $@
 
-ricks.h: ricks.bin
+ricks_compr.h: ricks_compr.bin
 	xxd --include $< > $@
 
 ricks.bin: $(RICKS_FINAL_IDX)
 	cat $^ > $@
+
+ricks_compr.bin: ricks.bin
+	./nibbles_to_bytes.py $< $@
 
 %.rgb: %.png
 	convert $< $@
@@ -109,4 +112,4 @@ palette.h: palette.bin
 	xxd --include $< > $@
 
 clean: 
-	rm -f rick_32x23.gif *.png *.rgb ricks.* *.idx ricks_joined.gif palette.*
+	rm -f rick_32x23.gif *.png *.rgb ricks.* *.idx ricks_joined.gif palette.* ricks_compr.*

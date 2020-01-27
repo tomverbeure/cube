@@ -7,7 +7,7 @@
 #include "hub75_streamer.h"
 
 #include "../movie/palette.h"
-#include "../movie/ricks.h"
+#include "../movie/ricks_compr.h"
 
 static inline uint32_t rdcycle(void) {
     uint32_t cycle;
@@ -304,10 +304,10 @@ void led_mem_stripes_rick()
 
     for(int frame_nr = 0; frame_nr < 16; ++frame_nr){
 
-        unsigned char *ptr = ricks_bin + frame_nr * 32 * 23;
+        unsigned char *ptr = ricks_compr_bin + frame_nr * 32 * 23;
 
         for(int row=0; row<23; ++row){
-            for(int col=0;col<32;++col){
+            for(int col=0;col<32;col+=2){
                 if (col == frame_nr*2){
                     ptr[row * 32 + col] = 10;
                 }
@@ -347,19 +347,25 @@ void led_mem_rick(int buffer_nr, int frame_nr)
     for(int side = 0; side < 6; ++side){
 
         int frame_nr_adj = (frame_nr + side) % 16;
-        unsigned char *ptr = ricks_bin + frame_nr_adj * 32 * 23;
+        unsigned char *ptr = ricks_compr_bin + frame_nr_adj * (32/2) * 23;
 
 	    for(int row=0; row<32; ++row){
-	        for(int col=0;col<32;++col){
+	        for(int col=0;col<32;col+=2){
 	            if (row < 4 || row >= 27){
 	                led_mem_wr(buffer_nr, side, col, row, side == 0 || side == 3 ? 32 : 0, side == 1 || side == 4 ? 32 : 0 , side == 2 || side == 5 ? 32 : 0);
 	            }
 	            else{
 	                unsigned char val = *ptr;
+
 	                led_mem_wr(buffer_nr, side, col, row, 
-	                                palette_bin[val * 3],
-	                                palette_bin[val * 3 + 1],
-	                                palette_bin[val * 3 + 2]);
+	                                palette_bin[(val & 15) * 3],
+	                                palette_bin[(val & 15) * 3 + 1],
+	                                palette_bin[(val & 15) * 3 + 2]);
+
+	                led_mem_wr(buffer_nr, side, col+1, row, 
+	                                palette_bin[(val>>4) * 3],
+	                                palette_bin[(val>>4) * 3 + 1],
+	                                palette_bin[(val>>4) * 3 + 2]);
 	                ++ptr;
 	            }
 	
@@ -491,7 +497,7 @@ int main() {
 
     hub75s_dim(0x40, 0x40, 0x40);
 
-    //play_rick();
-    play_pacman();
+    play_rick();
+    //play_pacman();
 
 }
