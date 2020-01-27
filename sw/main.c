@@ -79,6 +79,32 @@ uint16_t pacman_test[11] = {
     0b10000000001,
 };
 
+uint32_t ghost_left[14] = {
+    0b0000000000010101010000000000,
+    0b0000000101010101010101000000,
+    0b0000010101010101010101010000,
+    0b0001010101010101010101010100,
+    0b0001010111110101010111110100,
+    0b0001011111111101011111111100,
+    0b0101011111101001011111101001,
+    0b0101011111101001011111101001,
+    0b0101010111110101010111110101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010100010101010001010101,
+    0b0001010000000101000000010100,
+};
+
+uint32_t pac_color = 0x36fffe;
+
+uint32_t ghost_pink_colors[4]    = { 0x000000, 0xcb98ff, 0xff0000, 0xffffff };
+uint32_t ghost_cyan_colors[4]    = { 0x000000, 0xfffe2c, 0xff0000, 0xffffff };
+uint32_t ghost_red_colors[4]     = { 0x000000, 0x0711ff, 0xff0000, 0xffffff };
+uint32_t ghost_orange_colors[4]  = { 0x000000, 0x42cfff, 0xff0000, 0xffffff };
+
+uint32_t border_color = 0xfb0022;
+
 
 #define WAIT_CYCLES 4000000
 
@@ -199,19 +225,42 @@ void led_mem_rick(int buffer_nr, int frame_nr)
     }
 }
 
-void render_bitmap(uint16_t *bitmap, int size_x, int size_y, int buffer_nr, e_hub75_ring ring, int pos_x, int pos_y)
+void render_bitmap_1bpp(uint16_t *bitmap, uint32_t color, int size_x, int size_y, int buffer_nr, e_hub75_ring ring, int pos_x, int pos_y)
 {
     for(int y=0; y<size_y;++y){
         for(int x=0; x<size_x;++x){
                 //uint32_t bit = (bitmap[y] >> (size_x-1-x)) & 1;
                 uint32_t bit = (bitmap[y] >> (x)) & 1;
+                if (!bit)
+                    continue;
+
                 uint32_t log_addr = ring * HUB75S_RING_SIZE 
                                     + ((pos_y+y) + HUB75S_SIDE_HEIGHT) * HUB75S_STRIP_WIDTH 
                                     + (pos_x+x);
                     
                 uint32_t phys_addr = hub75s_calc_phys_addr(buffer_nr, log_addr);
 
-                uint32_t color = bit ? 0x00ffff : 0x000000;
+                MEM_WR(LED_MEM, phys_addr, color);
+        }
+    }
+}
+
+void render_bitmap_2bpp(uint32_t *bitmap, uint32_t *colors, int size_x, int size_y, int buffer_nr, e_hub75_ring ring, int pos_x, int pos_y)
+{
+    for(int y=0; y<size_y;++y){
+        for(int x=0; x<size_x;++x){
+                //uint32_t bit = (bitmap[y] >> (size_x-1-x)) & 1;
+                uint32_t bits = (bitmap[y] >> (2*size_x-2 - 2*x)) & 3;
+                if (bits == 0)
+                    continue;
+
+                uint32_t log_addr = ring * HUB75S_RING_SIZE 
+                                    + ((pos_y+y) + HUB75S_SIDE_HEIGHT) * HUB75S_STRIP_WIDTH 
+                                    + (pos_x+x);
+                    
+                uint32_t phys_addr = hub75s_calc_phys_addr(buffer_nr, log_addr);
+
+                uint32_t color = colors[bits];
 
                 MEM_WR(LED_MEM, phys_addr, color);
         }
@@ -248,15 +297,27 @@ int main() {
 
     while(1){
         led_mem_clear(scratch_buf);
-        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 0*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), -7);
-        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 1*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), -3);
-        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 2*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 1);
-        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 5);
-        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 4*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 9);
-        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 5*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 13);
-        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 6*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 17);
-        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 7*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 21);
-        render_bitmap(scratch_buf ? pacman_open : pacman_closed, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 8*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 25);
+        /*
+        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 0*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), -7);
+        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 1*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), -3);
+        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 2*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 1);
+        */
+        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 5);
+
+        int chase_dist = 20;
+        int ghost_delta = 12;
+
+        render_bitmap_2bpp(ghost_left, ghost_pink_colors,    14, 14, scratch_buf, RING_LFRBa, (pos_x- chase_dist - 0 * ghost_delta + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 3);
+        render_bitmap_2bpp(ghost_left, ghost_red_colors,     14, 14, scratch_buf, RING_LFRBa, (pos_x- chase_dist - 1 * ghost_delta + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 3);
+        render_bitmap_2bpp(ghost_left, ghost_orange_colors,  14, 14, scratch_buf, RING_LFRBa, (pos_x- chase_dist - 2 * ghost_delta + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 3);
+        render_bitmap_2bpp(ghost_left, ghost_cyan_colors,    14, 14, scratch_buf, RING_LFRBa, (pos_x- chase_dist - 3 * ghost_delta + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 3);
+        /*
+        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 4*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 9);
+        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 5*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 13);
+        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 6*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 17);
+        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 7*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 21);
+        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 8*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 25);
+        */
 
         //led_mem_rick(scratch_buf, movie_frame);
         //led_mem_fill(scratch_buf, 0, 0, 255);
