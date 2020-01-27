@@ -79,7 +79,7 @@ uint16_t pacman_test[11] = {
     0b10000000001,
 };
 
-uint32_t ghost_left[14] = {
+uint32_t ghost_left_0[14] = {
     0b0000000000010101010000000000,
     0b0000000101010101010101000000,
     0b0000010101010101010101010000,
@@ -96,14 +96,157 @@ uint32_t ghost_left[14] = {
     0b0001010000000101000000010100,
 };
 
+uint32_t ghost_left_1[14] = {
+    0b0000000000010101010000000000,
+    0b0000000101010101010101000000,
+    0b0000010101010101010101010000,
+    0b0001010101010101010101010100,
+    0b0001010111110101010111110100,
+    0b0001011111111101011111111100,
+    0b0101011111101001011111101001,
+    0b0101011111101001011111101001,
+    0b0101010111110101010111110101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101000101010000010101000101,
+    0b0100000001010000010100000001,
+};
+
+
+uint32_t ghost_up_0[14] = {
+    0b0000000000010101010000000000,
+    0b0000001010010101011010000000,
+    0b0000111010110101111010110000,
+    0b0001111111110101111111110100,
+    0b0001111111110101111111110100,
+    0b0001011111010101011111010100,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010100010101010001010101,
+    0b0001010000000101000000010100,
+};
+
+uint32_t ghost_up_1[14] = {
+    0b0000000000010101010000000000,
+    0b0000001010010101011010000000,
+    0b0000111010110101111010110000,
+    0b0001111111110101111111110100,
+    0b0001111111110101111111110100,
+    0b0001011111010101011111010100,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101000101010000010101000101,
+    0b0100000001010000010100000001,
+};
+
+uint32_t ghost_down_0[14] = {
+    0b0000000000010101010000000000,
+    0b0000000101010101010101000000,
+    0b0000010101010101010101010000,
+    0b0001010101010101010101010100,
+    0b0001011111010101011111010100,
+    0b0001111111110101111111110100,
+    0b0101111111110101111111110101,
+    0b0101111010110101111010110101,
+    0b0101011010010101011010010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010100010101010001010101,
+    0b0001010000000101000000010100,
+};
+
+uint32_t ghost_down_1[14] = {
+    0b0000000000010101010000000000,
+    0b0000000101010101010101000000,
+    0b0000010101010101010101010000,
+    0b0001010101010101010101010100,
+    0b0001011111010101011111010100,
+    0b0001111111110101111111110100,
+    0b0101111111110101111111110101,
+    0b0101111010110101111010110101,
+    0b0101011010010101011010010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101000101010000010101000101,
+    0b0100000001010000010100000001,
+};
+
+
+
+uint32_t ghost_scared_0[14] = {
+    0b0000000000010101010000000000,
+    0b0000000101010101010101000000,
+    0b0000010101010101010101010000,
+    0b0001010101010101010101010100,
+    0b0001010101010101010101010100,
+    0b0001010111110101111101010100,
+    0b0101010111110101111101010101,
+    0b0101010101010101010101010101,
+    0b0101010101010101010101010101,
+    0b0101111101011111010111110101,
+    0b0111010111110101111101011101,
+    0b0101010101010101010101010101,
+    0b0101000101010000010101000101,
+    0b0100000001010000010100000001,
+};
+
+
+uint32_t cherry[12] = {
+    0b000000000000000000001010,
+    0b000000000000000010101010,
+    0b000000000000101000100000,
+    0b000000000010000000100000,
+    0b000101011000000010000000,
+    0b010101100101001000000000,
+    0b010101010100011001010000,
+    0b011101010001011001010100,
+    0b010111010001010101010100,
+    0b000101010001110101010100,
+    0b000000000001011101010100,
+    0b000000000000010101010000,
+};
+
+uint16_t dot_small[2] = {
+    0b11,
+    0b11,
+};
+
+uint16_t dot_large[8] = {
+    0b00111100,
+    0b01111110,
+    0b11111111,
+    0b11111111,
+    0b11111111,
+    0b11111111,
+    0b01111110,
+    0b00111100,
+};
+
+
 uint32_t pac_color = 0x36fffe;
 
 uint32_t ghost_pink_colors[4]    = { 0x000000, 0xcb98ff, 0xff0000, 0xffffff };
 uint32_t ghost_cyan_colors[4]    = { 0x000000, 0xfffe2c, 0xff0000, 0xffffff };
 uint32_t ghost_red_colors[4]     = { 0x000000, 0x0711ff, 0xff0000, 0xffffff };
 uint32_t ghost_orange_colors[4]  = { 0x000000, 0x42cfff, 0xff0000, 0xffffff };
+uint32_t ghost_scared_colors[4]  = { 0x000000, 0xfb1313, 0x000000, 0x42cfff };
+
+uint32_t cherry_colors[4]        = { 0x000000, 0x0711ff, 0x5599de, 0xffffff };
 
 uint32_t border_color = 0xfb0022;
+
+uint32_t dot_color = 0x92b1f8;
 
 
 #define WAIT_CYCLES 4000000
@@ -297,27 +440,45 @@ int main() {
 
     while(1){
         led_mem_clear(scratch_buf);
-        /*
-        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 0*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), -7);
-        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 1*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), -3);
-        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 2*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 1);
-        */
-        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 5);
+
+#if 0
+        for(int i=0; i<256;i+=8){
+            if (i < pos_x-96 || i > pos_x+96){
+                render_bitmap_1bpp(dot_small, dot_color, 2, 2, scratch_buf, RING_LFRBa, i, 15);
+            }
+        }
+#endif
+
+        uint32_t *current_ghost = ghost_left_0;
+        uint16_t *current_pac   = pacman_open;
+        
+        if (REG_RD(HUB75S_FRAME_CNTR) % 20 > 10){
+            current_ghost = ghost_left_1;
+            current_pac   = pacman_closed;
+        }
+
+        render_bitmap_1bpp(current_pac, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x) % (4*HUB75S_SIDE_WIDTH), pos_y);
 
         int chase_dist = 20;
         int ghost_delta = 12;
 
-        render_bitmap_2bpp(ghost_left, ghost_pink_colors,    14, 14, scratch_buf, RING_LFRBa, (pos_x- chase_dist - 0 * ghost_delta + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 3);
-        render_bitmap_2bpp(ghost_left, ghost_red_colors,     14, 14, scratch_buf, RING_LFRBa, (pos_x- chase_dist - 1 * ghost_delta + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 3);
-        render_bitmap_2bpp(ghost_left, ghost_orange_colors,  14, 14, scratch_buf, RING_LFRBa, (pos_x- chase_dist - 2 * ghost_delta + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 3);
-        render_bitmap_2bpp(ghost_left, ghost_cyan_colors,    14, 14, scratch_buf, RING_LFRBa, (pos_x- chase_dist - 3 * ghost_delta + 3*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 3);
-        /*
-        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 4*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 9);
-        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 5*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 13);
-        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 6*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 17);
-        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 7*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 21);
-        render_bitmap_1bpp(scratch_buf ? pacman_open : pacman_closed, pac_color, 11, 11, scratch_buf, RING_LFRBa, (pos_x + 8*HUB75S_SIDE_WIDTH*4/9) % (4*HUB75S_SIDE_WIDTH), 25);
-        */
+        render_bitmap_2bpp(current_ghost,   ghost_pink_colors,    14, 14, scratch_buf, RING_LFRBa, (pos_x - chase_dist - 0 * ghost_delta) % (4*HUB75S_SIDE_WIDTH), pos_y-2);
+        render_bitmap_2bpp(current_ghost,   ghost_red_colors,     14, 14, scratch_buf, RING_LFRBa, (pos_x - chase_dist - 1 * ghost_delta) % (4*HUB75S_SIDE_WIDTH), pos_y-2);
+        render_bitmap_2bpp(current_ghost,   ghost_orange_colors,  14, 14, scratch_buf, RING_LFRBa, (pos_x - chase_dist - 2 * ghost_delta) % (4*HUB75S_SIDE_WIDTH), pos_y-2);
+        render_bitmap_2bpp(current_ghost,   ghost_cyan_colors,    14, 14, scratch_buf, RING_LFRBa, (pos_x - chase_dist - 3 * ghost_delta) % (4*HUB75S_SIDE_WIDTH), pos_y-2);
+
+        render_bitmap_2bpp(ghost_scared_0, ghost_scared_colors,  14, 14, scratch_buf, RING_LFRBa, (pos_x + 30) % (4*HUB75S_SIDE_WIDTH), pos_y-2);
+
+        render_bitmap_2bpp(cherry, cherry_colors, 12, 12, scratch_buf, RING_LFRBa, 10 + HUB75S_SIDE_WIDTH, 10-HUB75S_SIDE_WIDTH);
+
+/*
+        for(int x=0;x<4*HUB75S_SIDE_WIDTH;x++){
+                                    + ((pos_y+y) + HUB75S_SIDE_HEIGHT) * HUB75S_STRIP_WIDTH 
+                                    + (pos_x+x);
+
+        }
+*/
+
 
         //led_mem_rick(scratch_buf, movie_frame);
         //led_mem_fill(scratch_buf, 0, 0, 255);
