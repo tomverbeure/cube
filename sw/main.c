@@ -416,14 +416,16 @@ void render_bitmap_2bpp(uint32_t *bitmap, uint32_t *colors, int size_x, int size
     }
 }
 
-int play_rick()
+int play_rick(int total_nr_frames)
 {
     uint32_t movie_frame = 0;
     uint32_t scratch_buf = 1;
 
     int pos_x = 0;
 
-    while(1){
+    uint32_t start_frame = REG_RD(HUB75S_FRAME_CNTR);
+
+    while(REG_RD(HUB75S_FRAME_CNTR) < start_frame + total_nr_frames){
         led_mem_clear(scratch_buf);
         led_mem_rick(scratch_buf, movie_frame);
         movie_frame = (movie_frame + 1) % 16;
@@ -442,14 +444,17 @@ int play_rick()
 
 }
 
-int play_pacman()
+int play_pacman(int total_nr_frames)
 {
     uint32_t scratch_buf = 1;
 
     int pos_x = 0;
     int pos_y = 10;
 
-    while(1){
+    uint32_t start_frame = REG_RD(HUB75S_FRAME_CNTR);
+
+    while(REG_RD(HUB75S_FRAME_CNTR) < start_frame + total_nr_frames){
+
         led_mem_clear(scratch_buf);
 
         uint32_t *current_ghost = ghost_left_0;
@@ -497,7 +502,8 @@ int main() {
 
     hub75s_dim(0x40, 0x40, 0x40);
 
-    play_rick();
-    //play_pacman();
-
+    while(1){
+        play_rick(120 * 3);
+        play_pacman(120 * 15);
+    }
 }
