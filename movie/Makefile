@@ -75,7 +75,7 @@ all: ricks.h palette.h
 
 # Convert into 1 file to force unique palette
 ricks_joined.gif: $(RICKS_ORIG_PNG)
-	convert $(RICKS_ORIG_PNG) -append -colors 64 $@
+	convert $(RICKS_ORIG_PNG) -append -colors 16 $@
 
 .PRECIOUS: %.rgb
 %.rgb: ricks_joined.gif
