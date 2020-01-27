@@ -196,7 +196,7 @@ uint32_t hub75s_calc_phys_addr(int buffer, int log_addr)
             // 
             { ORIENT_INV_Y_X,   ORIENT_X_Y,    ORIENT_Y_INV_X,      ORIENT_INV_X_INV_Y     },
             { ORIENT_X_Y,       ORIENT_X_Y,    ORIENT_X_Y,          ORIENT_X_Y             },
-            { ORIENT_Y_INV_X,   ORIENT_X_Y,    ORIENT_INV_Y_X,      ORIENT_Y_X             }
+            { ORIENT_Y_INV_X,   ORIENT_X_Y,    ORIENT_INV_Y_X,      ORIENT_INV_X_INV_Y     }
         }
     };
 
