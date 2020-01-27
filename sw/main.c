@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <math.h>
 
 #include "reg.h"
 #include "top_defines.h"
@@ -233,6 +232,77 @@ uint16_t dot_large[8] = {
     0b00111100,
 };
 
+uint32_t mario_ground[3] = {
+    0b01111111111111111110011111111101,
+    0b11010101010101010110110101010110,
+    0b11010101010101010110111001010110
+};
+
+uint32_t mario_ground_colors[4] = { 0x000000, 0x1556d0, 0x000000, 0xc1c2f7 };
+
+uint32_t mario_sky_color = 0xff8f58;
+
+
+uint32_t mario_walk_0[16] = {
+    0b00000000001010101010000000000000,
+    0b00000000101010101010101010000000,
+    0b00000000010101111101110000000000,
+    0b00000001110111111101111111000000,
+    0b00000001110101111111011111110000,
+    0b00000001011111111101010101000000,
+    0b00000000001111111111111100000000,
+    0b00000101010110100101000000000000,
+    0b11110101010110101001010111111100,
+    0b11111100010110111010100101111100,
+    0b11110000101010101010100000010000,
+    0b00000010101010101010101001010000,
+    0b00001010101010101010101001010000,
+    0b00010110101000000010101001010000,
+    0b00010101000000000000000000000000,
+    0b00000101010000000000000000000000,
+};
+
+uint32_t mario_walk_1[16] = {
+    0b00000000001010101010000000000000,
+    0b00000000101010101010101010000000,
+    0b00000000010101111101110000000000,
+    0b00000001110111111101111111000000,
+    0b00000001110101111111011111110000,
+    0b00000001011111111101010101000000,
+    0b00000000001111111111111100000000,
+    0b00000000010110010101000000000000,
+    0b00000001010101101001010000000000,
+    0b00000001010110101110101100000000,
+    0b00000001010101101010101000000000,
+    0b00000010010111111110101000000000,
+    0b00000000100111111010100000000000,
+    0b00000000001010100101010000000000,
+    0b00000000000101010101010100000000,
+    0b00000000000101010100000000000000,
+};
+
+uint32_t mario_walk_2[16] = {
+    0b00000000000000000000000000000000,
+    0b00000000000010101010100000000000,
+    0b00000000001010101010101010100000,
+    0b00000000000101011111011100000000,
+    0b00000000011101111111011111110000,
+    0b00000000011101011111110111111100,
+    0b00000000010111111111010101010000,
+    0b00000000000011111111111111000000,
+    0b00000000000101010110010011000000,
+    0b00000000110101010101011111110000,
+    0b00000011111001010101011111000000,
+    0b00000001011010101010101000000000,
+    0b00000001101010101010101000000000,
+    0b00000101101010001010100000000000,
+    0b00000100000000010101000000000000,
+    0b00000000000000010101010000000000,
+};
+
+
+uint32_t mario_colors[4] = { 0x000000, 0x106d8a, 0x053bec, 0x3d9fff };
+
 
 uint32_t pac_color = 0x36fffe;
 
@@ -416,7 +486,7 @@ void render_bitmap_2bpp(uint32_t *bitmap, uint32_t *colors, int size_x, int size
     }
 }
 
-int play_rick(int total_nr_frames)
+void play_rick(int total_nr_frames)
 {
     uint32_t movie_frame = 0;
     uint32_t scratch_buf = 1;
@@ -444,7 +514,7 @@ int play_rick(int total_nr_frames)
 
 }
 
-int play_pacman(int total_nr_frames)
+void play_pacman(int total_nr_frames)
 {
     uint32_t scratch_buf = 1;
 
@@ -492,6 +562,57 @@ int play_pacman(int total_nr_frames)
     }
 }
 
+void play_mario(int total_nr_frames)
+{
+    uint32_t scratch_buf = 1;
+
+    int pos_x = 0;
+    int pos_y = 10;
+
+    uint32_t start_frame = REG_RD(HUB75S_FRAME_CNTR);
+
+    while(REG_RD(HUB75S_FRAME_CNTR) < start_frame + total_nr_frames){
+
+        led_mem_fill(scratch_buf, (mario_sky_color & 255) * 3/4, ((mario_sky_color >> 8) & 255) * 3/4, (mario_sky_color >> 16) *3/4); 
+
+        int stride = (REG_RD(HUB75S_FRAME_CNTR) % 21)/7;
+
+        uint32_t *current_mario = stride == 0 ? mario_walk_0 :
+                                  stride == 1 ? mario_walk_1 :
+                                                mario_walk_2 ;
+
+
+        /*
+        if ((pos_x & 31) < 15){
+            int q = ((pos_x & 15) - 8)*2/3;
+            pos_y = 14-q*q;
+        }
+        else{
+            pos_y = 14;
+        }
+        */
+
+        pos_y = 14;
+
+        for(int i=0;i<256;i+=16){
+            render_bitmap_2bpp(mario_ground, mario_ground_colors, 16, 3, scratch_buf, RING_LFRBa, i % (4*HUB75S_SIDE_WIDTH), 29);
+        }
+
+        render_bitmap_2bpp(current_mario,   mario_colors,    16, 16, scratch_buf, RING_LFRBa, (pos_x) % (4*HUB75S_SIDE_WIDTH), pos_y);
+
+        pos_x = (pos_x + 1) % (4 * HUB75S_SIDE_WIDTH);
+
+        uint32_t prev_frame_cntr = REG_RD(HUB75S_FRAME_CNTR);
+        while(REG_RD(HUB75S_FRAME_CNTR) < prev_frame_cntr + 6) ;
+
+        REG_WR_FIELD(HUB75S_CONFIG, BUFFER_NR, scratch_buf);
+        while(REG_RD_FIELD(HUB75S_STATUS, CUR_BUFFER_NR) != scratch_buf) 
+            ;
+
+        scratch_buf ^= 1;
+    }
+}
+
 
 int main() {
 
@@ -505,5 +626,6 @@ int main() {
     while(1){
         play_rick(120 * 3);
         play_pacman(120 * 15);
+        play_mario(120 * 6);
     }
 }
