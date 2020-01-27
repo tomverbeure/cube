@@ -410,29 +410,34 @@ void render_bitmap_2bpp(uint32_t *bitmap, uint32_t *colors, int size_x, int size
     }
 }
 
-
-int main() {
-
-//    led_mem_fill(128, 64, 32);
-
-    hub75s_config();
-    hub75s_start();
-//    led_mem_stripes_rick();
-
-    REG_WR(LED_DIR, 0xff);
-
-    hub75s_dim(0x40, 0x40, 0x40);
-
-//    led_render_clear_leds();
-
-//    while(1){
-//        led_mem_effect();
-//   }
-
-//    led_mem_rows(0);
-//    led_mem_rick(0,0);
-
+int play_rick()
+{
     uint32_t movie_frame = 0;
+    uint32_t scratch_buf = 1;
+
+    int pos_x = 0;
+
+    while(1){
+        led_mem_clear(scratch_buf);
+        led_mem_rick(scratch_buf, movie_frame);
+        movie_frame = (movie_frame + 1) % 16;
+
+        pos_x = (pos_x + 1) % (4 * HUB75S_SIDE_WIDTH);
+
+        uint32_t prev_frame_cntr = REG_RD(HUB75S_FRAME_CNTR);
+        while(REG_RD(HUB75S_FRAME_CNTR) < prev_frame_cntr + 14) ;
+
+        REG_WR_FIELD(HUB75S_CONFIG, BUFFER_NR, scratch_buf);
+        while(REG_RD_FIELD(HUB75S_STATUS, CUR_BUFFER_NR) != scratch_buf) 
+            ;
+
+        scratch_buf ^= 1;
+    }
+
+}
+
+int play_pacman()
+{
     uint32_t scratch_buf = 1;
 
     int pos_x = 0;
@@ -440,14 +445,6 @@ int main() {
 
     while(1){
         led_mem_clear(scratch_buf);
-
-#if 0
-        for(int i=0; i<256;i+=8){
-            if (i < pos_x-96 || i > pos_x+96){
-                render_bitmap_1bpp(dot_small, dot_color, 2, 2, scratch_buf, RING_LFRBa, i, 15);
-            }
-        }
-#endif
 
         uint32_t *current_ghost = ghost_left_0;
         uint16_t *current_pac   = pacman_open;
@@ -471,19 +468,6 @@ int main() {
 
         render_bitmap_2bpp(cherry, cherry_colors, 12, 12, scratch_buf, RING_LFRBa, 10 + HUB75S_SIDE_WIDTH, 10-HUB75S_SIDE_WIDTH);
 
-/*
-        for(int x=0;x<4*HUB75S_SIDE_WIDTH;x++){
-                                    + ((pos_y+y) + HUB75S_SIDE_HEIGHT) * HUB75S_STRIP_WIDTH 
-                                    + (pos_x+x);
-
-        }
-*/
-
-
-        //led_mem_rick(scratch_buf, movie_frame);
-        //led_mem_fill(scratch_buf, 0, 0, 255);
-        movie_frame = (movie_frame + 1) % 16;
-
         pos_x = (pos_x + 1) % (4 * HUB75S_SIDE_WIDTH);
 
         uint32_t prev_frame_cntr = REG_RD(HUB75S_FRAME_CNTR);
@@ -495,18 +479,19 @@ int main() {
 
         scratch_buf ^= 1;
     }
+}
 
-    while(1){
-        REG_WR(LED_WRITE, 0x00);
-        REG_WR(LED_MEM, 0x01);
-        wait(WAIT_CYCLES);
-        REG_WR(LED_MEM, 0x00);
 
-        REG_WR(LED_WRITE, 0x02);
-        wait(WAIT_CYCLES);
-        REG_WR(LED_WRITE, 0x04);
-        wait(WAIT_CYCLES);
-    }
+int main() {
 
-    while(1);
+    hub75s_config();
+    hub75s_start();
+
+    REG_WR(LED_DIR, 0xff);
+
+    hub75s_dim(0x40, 0x40, 0x40);
+
+    //play_rick();
+    play_pacman();
+
 }
