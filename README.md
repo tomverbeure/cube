@@ -1,6 +1,12 @@
 
 # LED Cube with Cisco Controller and Pixel Purse LED Panels
 
+This repo needs a bit of cleanup for general public consumption,
+but it had all the assets for my LED cube that’s built from
+Project MC2 Pixel Purse LED panels.
+
+The slides of BangBangCon West 2020 talk about this project
+can be found [here](https://docs.google.com/presentation/d/1FYmVh-brx6SpZoJmzuIXrNegWdtriQ9k38EbrvDupg8).
 
 ## Current Measurements:
 
@@ -208,5 +214,4 @@ led_mem_addr = (side_nr * 32 * 32) + orient_class[1] * 32 + orient_class[0]
 Each ring occupies 8 x 3 = 24 sides, but we allocate 32 sides for that.
 That gives 32 * 32 * 32 = 32k addresses per ring.
 There are 3 rings, so we need 98k local addresses.
-
 
