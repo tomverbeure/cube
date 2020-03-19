@@ -5,8 +5,9 @@ This repo needs a bit of cleanup for general public consumption,
 but it had all the assets for my LED cube that’s built from
 Project MC2 Pixel Purse LED panels.
 
-The slides of BangBangCon West 2020 talk about this project
-can be found [here](https://docs.google.com/presentation/d/1FYmVh-brx6SpZoJmzuIXrNegWdtriQ9k38EbrvDupg8).
+I gave a talk about this project at BangBangCon West 2020. 
+
+[Video](https://www.youtube.com/watch?v=0tBU5-lJYmU) and [slides](https://docs.google.com/presentation/d/1FYmVh-brx6SpZoJmzuIXrNegWdtriQ9k38EbrvDupg8) of the talk.
 
 ## Current Measurements:
 
