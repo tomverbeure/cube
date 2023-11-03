@@ -2,6 +2,7 @@
 
 import sys
 import struct
+import re
 from array import array 
 
 import pprint
@@ -18,10 +19,14 @@ def create_chunks(list_name, n):
 
 
 with open(sys.argv[1]) as palette_file:
+    re_rgb = re.compile(r"\((\d+),(\d+),(\d+)\)")
+
     for line in palette_file:
-        r = int(line[13:16])
-        g = int(line[17:20])
-        b = int(line[21:24])
+        s = re_rgb.search(line)
+
+        r = int(s.group(1))
+        g = int(s.group(2))
+        b = int(s.group(3))
 
         palette_lookup[r + g*256 + b * 65536] = len(palette)//3
         palette.append(r)
